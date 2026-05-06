@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#070714">
+<title>CollectaVault Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070714;--s:#12122a;--s2:#1a1a35;--bd:#2a2a52;
+  --ac:#7c6af7;--pk:#f76a8a;--cy:#6af7c8;--go:#f7c36a;
+  --tx:#eeedf8;--mu:#6b6b9a;--re:#f76a6a;--gr:#6af796;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--r:12px;
+}
+body{font-family:var(--fb);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+/* ── OVERLAY SETUP ── */
+#setup{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.card{background:var(--s);border:1px solid var(--bd);border-radius:16px;padding:32px;max-width:560px;width:100%}
+.logo{font-family:var(--fh);font-size:24px;font-weight:800;color:var(--ac);margin-bottom:20px}
+h2{font-family:var(--fh);font-size:15px;font-weight:700;margin-bottom:8px}
+p{font-size:13px;color:var(--mu);line-height:1.7;margin-bottom:14px}
+.steps{list-style:none;margin-bottom:18px}
+.steps li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd);font-size:13px;align-items:flex-start}
+.sn{background:var(--ac);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:var(--fh)}
+.lbl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;display:block}
+.inp{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;color:var(--tx);font-size:13px;outline:none;font-family:var(--fb);margin-bottom:10px}
+.inp:focus{border-color:var(--ac)}
+.btn{font-family:var(--fh);font-size:13px;font-weight:700;padding:10px 22px;border-radius:8px;cursor:pointer;border:none;transition:all .15s}
+.btn-p{background:var(--ac);color:#fff}.btn-p:hover{background:#6a58e5}
+.btn-g{background:transparent;color:var(--mu);border:1px solid var(--bd)}.btn-g:hover{color:var(--tx)}
+.btn-d{background:var(--re);color:#fff}
+.btn-sm{padding:7px 14px;font-size:11px}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.err{color:var(--re);font-size:12px;background:rgba(247,106,106,.1);border:1px solid rgba(247,106,106,.3);border-radius:6px;padding:8px 12px;margin-bottom:8px;display:none}
+.err.show{display:block}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.opt{background:var(--bg);border:2px solid var(--bd);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s}
+.opt:hover,.opt.sel{border-color:var(--ac)}
+.opt-ico{font-size:24px;margin-bottom:6px}
+.opt-name{font-family:var(--fh);font-weight:700;font-size:13px;margin-bottom:4px}
+.opt-desc{font-size:11px;color:var(--mu);line-height:1.5}
+.tag-rec{font-family:var(--fh);font-size:10px;color:var(--ac);font-weight:700;margin-top:6px}
+
+/* ── AUTH ── */
+#auth{min-height:100vh;display:none;align-items:center;justify-content:center;padding:20px}
+.auth-logo{font-family:var(--fh);font-size:22px;font-weight:800;text-align:center;color:var(--ac);margin-bottom:4px}
+.auth-tag{text-align:center;color:var(--mu);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.quick{display:flex;gap:8px;margin-bottom:14px}
+.qbtn{flex:1;padding:11px;border-radius:8px;font-family:var(--fh);font-weight:700;font-size:13px;cursor:pointer;border:2px solid transparent;color:#fff;transition:all .15s;text-align:center}
+.qbtn:hover{transform:translateY(-2px)}
+.tabs{display:flex;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:4px;margin-bottom:18px}
+.tab{flex:1;padding:8px;border-radius:7px;font-family:var(--fh);font-weight:600;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--mu);transition:all .15s;text-align:center}
+.tab.on{background:var(--ac);color:#fff}
+.storage-ok{background:rgba(106,247,200,.08);border:1px solid rgba(106,247,200,.25);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--cy);margin-bottom:14px}
+.storage-warn{background:rgba(247,195,106,.08);border:1px solid rgba(247,195,106,.25);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--go);margin-bottom:14px}
+
+/* ── APP ── */
+#app{display:none;min-height:100vh}
+#app.on{display:block}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(7,7,20,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);height:56px;display:flex;align-items:center;padding:0 18px;gap:10px}
+.hdr-logo{font-family:var(--fh);font-size:17px;font-weight:800;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.hdr-logo .ac{color:var(--ac)}
+.hdr-logo small{font-size:9px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;font-weight:400}
+.gap{flex:1}
+.srch{flex:0 1 280px;position:relative}
+.srch input{width:100%;background:var(--s);border:1px solid var(--bd);border-radius:8px;padding:7px 12px 7px 30px;color:var(--tx);font-size:13px;outline:none;font-family:var(--fb)}
+.srch input:focus{border-color:var(--ac)}
+.srch input::placeholder{color:var(--mu)}
+.srch-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:13px;pointer-events:none}
+.sync{display:flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--gr)}.dot-local{background:var(--mu)}.dot-saving{background:var(--go);animation:pulse .8s infinite}.dot-err{background:var(--re)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-lbl{font-size:11px;color:var(--mu)}
+.add-btn{width:34px;height:34px;border-radius:8px;background:var(--ac);color:#fff;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.add-btn:hover{background:#6a58e5}
+.usr{display:flex;align-items:center;gap:8px;background:var(--s);border:1px solid var(--bd);border-radius:10px;padding:5px 12px 5px 7px;cursor:pointer}
+.usr:hover{border-color:var(--ac)}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.mob-menu{display:none;width:34px;height:34px;border-radius:8px;background:var(--s);border:1px solid var(--bd);align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--mu)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:214px;flex-shrink:0;background:var(--s);border-right:1px solid var(--bd);padding:8px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column}
+.nl{font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:2.5px;padding:12px 8px 5px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--mu);font-size:13px;transition:all .12s;border:none;background:transparent;width:100%;text-align:left}
+.ni:hover{background:rgba(255,255,255,.04);color:var(--tx)}
+.ni.on{background:rgba(124,106,247,.15);color:var(--ac)}
+.ni-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.ni-cnt{margin-left:auto;font-size:10px;font-weight:700;background:var(--s2);color:var(--mu);padding:1px 6px;border-radius:20px}
+.sb-gap{flex:1}
+.sb-foot{padding:6px;border-top:1px solid var(--bd);margin-top:6px}
+
+/* ── MAIN ── */
+.main{flex:1;min-width:0;padding:22px;overflow-y:auto}
+.page{display:none;animation:fu .2s ease}
+.page.on{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.phdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.ptitle{font-family:var(--fh);font-size:22px;font-weight:800}
+.psub{font-size:13px;color:var(--mu);margin-top:2px}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.stat{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--c,var(--ac))}
+.stat-n{font-family:var(--fh);font-size:28px;font-weight:800;line-height:1}
+.stat-l{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px}
+.stat-i{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:24px;opacity:.1}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:600;font-family:var(--fh);padding:5px 11px;border-radius:20px;cursor:pointer;border:1px solid var(--bd);color:var(--mu);background:transparent;transition:all .12s}
+.chip:hover{color:var(--tx)}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.chip[data-f="COMPLETADA"].on{background:var(--gr);border-color:var(--gr);color:#000}
+.chip[data-f="INCOMPLETA"].on{background:var(--go);border-color:var(--go);color:#000}
+.chip[data-f="EN EMISIÓN"].on{background:var(--cy);border-color:var(--cy);color:#000}
+.fsel{background:var(--s);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--tx);font-size:12px;outline:none;cursor:pointer;font-family:var(--fb)}
+.vtoggle{display:flex;background:var(--s);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.vbtn{padding:6px 10px;border:none;background:transparent;color:var(--mu);cursor:pointer;font-size:14px;transition:all .12s}
+.vbtn.on{background:var(--ac);color:#fff}
+
+/* ── GRID ── */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.bcard{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .2s}
+.bcard:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.5);border-color:var(--ac)}
+.bcover{aspect-ratio:2/3;background:var(--s2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.bcover img{width:100%;height:100%;object-fit:cover}
+.bcover-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;height:100%;font-size:28px;opacity:.25}
+.bcover-ph span{font-family:var(--fh);font-size:9px;color:var(--mu);text-align:center;padding:0 6px;opacity:1}
+.bst{position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;font-family:var(--fh);padding:3px 7px;border-radius:20px}
+.s-COMPLETADA{background:rgba(106,247,150,.2);color:var(--gr)}
+.s-INCOMPLETA{background:rgba(247,195,106,.2);color:var(--go)}
+.s-EN-EMISIÓN,.s-EN-EMISION{background:rgba(106,247,200,.2);color:var(--cy)}
+.s-SIN-DATOS{background:rgba(107,107,154,.2);color:var(--mu)}
+.binfo{padding:9px 10px}
+.btitle{font-family:var(--fh);font-size:11px;font-weight:700;line-height:1.3;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bmeta{font-size:10px;color:var(--mu)}
+.stars{display:flex;gap:2px;margin-top:4px}
+.star{font-size:10px;cursor:pointer;color:var(--bd)}
+.star.lit{color:var(--go)}
+
+/* ── LIST ── */
+.blist{display:flex;flex-direction:column;gap:7px}
+.brow{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.brow:hover{border-color:var(--ac);background:var(--s2)}
+.brow-cov{width:38px;height:52px;border-radius:5px;background:var(--s2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.6}
+.brow-cov img{width:100%;height:100%;object-fit:cover}
+.brow-info{flex:1;min-width:0}
+.brow-title{font-family:var(--fh);font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow-sub{font-size:11px;color:var(--mu);margin-top:2px}
+.brow-right{text-align:right;flex-shrink:0}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal{background:var(--s);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:720px;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:mi .2s ease;position:relative;margin:auto}
+@keyframes mi{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.modal-x{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--s2);border:1px solid var(--bd);cursor:pointer;color:var(--mu);display:flex;align-items:center;justify-content:center;font-size:14px;z-index:1}
+.modal-x:hover{color:var(--tx)}
+.mbody{padding:24px}
+.mgrid{display:grid;grid-template-columns:180px 1fr;gap:20px}
+.mcov{display:flex;flex-direction:column;gap:6px}
+.mcov-img{aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:40px;opacity:.4}
+.mcov-img img{width:100%;height:100%;object-fit:cover;opacity:1}
+.mthumbs{display:flex;gap:4px;flex-wrap:wrap}
+.mthumb{width:36px;height:50px;border-radius:4px;overflow:hidden;cursor:pointer;opacity:.6;border:2px solid transparent;transition:all .15s}
+.mthumb.on{opacity:1;border-color:var(--ac)}
+.mthumb img{width:100%;height:100%;object-fit:cover}
+.add-img{border:1px dashed var(--bd);border-radius:7px;padding:8px;text-align:center;cursor:pointer;font-size:11px;color:var(--mu);background:transparent;width:100%;transition:all .15s}
+.add-img:hover{border-color:var(--ac);color:var(--ac)}
+.mtitle{font-family:var(--fh);font-size:19px;font-weight:800;line-height:1.2;margin-bottom:5px}
+.mauthor{font-size:13px;color:var(--mu);margin-bottom:12px}
+.mrow{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+.mstars{display:flex;gap:3px}
+.mstar{font-size:20px;cursor:pointer;color:var(--bd)}
+.mstar.lit{color:var(--go)}
+.badge{font-size:10px;font-weight:700;font-family:var(--fh);padding:4px 10px;border-radius:20px}
+.minfo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mil{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px}
+.miv{font-size:13px}
+.msinop{font-size:13px;color:var(--mu);line-height:1.7;margin-bottom:12px;max-height:120px;overflow-y:auto}
+.mcmt{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:10px}
+.mcmt-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.mcmt-ta{width:100%;background:transparent;border:none;color:var(--tx);font-size:13px;font-family:var(--fb);resize:none;outline:none;min-height:65px}
+.mcmt-ta::placeholder{color:var(--mu)}
+.mactions{display:flex;gap:7px;flex-wrap:wrap}
+
+/* ── FORM ── */
+.fcard{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);padding:24px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ffull{grid-column:1/-1}
+.fsec{font-family:var(--fh);font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--bd)}
+.upload-z{border:2px dashed var(--bd);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px}
+.upload-z:hover{border-color:var(--ac);background:rgba(124,106,247,.05)}
+.img-prevs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.img-pv{width:72px;height:98px;border-radius:6px;overflow:hidden;position:relative;border:1px solid var(--bd)}
+.img-pv img{width:100%;height:100%;object-fit:cover}
+.img-del{position:absolute;top:3px;right:3px;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.8);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+textarea.inp{resize:vertical;min-height:75px}
+
+/* ── SETTINGS ── */
+.scard{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:12px}
+.sh{font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:12px}
+.si-ok{background:rgba(106,247,200,.06);border:1px solid rgba(106,247,200,.2);border-radius:9px;padding:12px;font-size:12px;color:var(--mu);line-height:1.7;margin-bottom:10px}
+.si-warn{background:rgba(247,195,106,.06);border:1px solid rgba(247,195,106,.25);border-radius:9px;padding:12px;font-size:12px;color:var(--go);line-height:1.7;margin-bottom:10px}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:50px 20px;color:var(--mu)}
+.empty-ico{font-size:40px;opacity:.3;margin-bottom:10px}
+.empty-t{font-family:var(--fh);font-size:16px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.pgn{display:flex;gap:5px;align-items:center;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.pgbtn{padding:5px 11px;border-radius:7px;border:1px solid var(--bd);background:var(--s);color:var(--mu);cursor:pointer;font-family:var(--fh);font-size:12px;font-weight:600;transition:all .12s}
+.pgbtn:hover{color:var(--tx);border-color:var(--ac)}
+.pgbtn.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.pgbtn:disabled{opacity:.4;cursor:not-allowed}
+#toasts{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 15px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:ti .2s ease}
+@keyframes ti{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast.ok{border-color:var(--gr)}.toast.err{border-color:var(--re)}
+.prog{height:3px;background:var(--bd);border-radius:2px;overflow:hidden;margin-top:5px}
+.prog-b{height:100%;background:var(--ac);transition:width .3s}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .mob-menu{display:flex}
+  .srch{display:none}
+  .sidebar{position:fixed;left:-214px;top:56px;height:calc(100vh-56px);z-index:200;transition:left .25s;box-shadow:4px 0 20px rgba(0,0,0,.5)}
+  .sidebar.open{left:0}
+  .layout{display:block}
+  .main{padding:14px}
+  .mgrid{grid-template-columns:1fr}
+  .mcov-img{aspect-ratio:16/9;max-height:180px}
+  .fgrid{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .modal-bg{padding:0;align-items:flex-end}
+  .modal{border-radius:16px 16px 0 0;max-height:93vh;overflow-y:auto;margin:0}
+  .bgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px}
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+<div class="card">
+  <div class="logo">📚 CollectaVault Pro</div>
+  <div id="sp1">
+    <h2>¿Dónde guardar tus datos?</h2>
+    <p>Elige el almacenamiento. Con GitHub tus datos están en la nube y accesibles desde cualquier dispositivo.</p>
+    <div class="opt-grid">
+      <div class="opt" onclick="showSP(2)">
+        <div class="opt-ico">🐙</div>
+        <div class="opt-name">GitHub</div>
+        <div class="opt-desc">Repositorio privado gratuito. Sincroniza entre dispositivos. Historial de cambios.</div>
+        <div class="tag-rec">✓ RECOMENDADO</div>
+      </div>
+      <div class="opt" onclick="setupLocal()">
+        <div class="opt-ico">💾</div>
+        <div class="opt-name">Solo este dispositivo</div>
+        <div class="opt-desc">Datos en este navegador. Si limpias el historial se pierden.</div>
+      </div>
+    </div>
+  </div>
+  <div id="sp2" style="display:none">
+    <h2>Conectar GitHub (3 minutos)</h2>
+    <ol class="steps">
+      <li><div class="sn">1</div><div>Ve a <a href="https://github.com" target="_blank" style="color:var(--ac)">github.com</a> → Crea una cuenta gratuita si no tienes → Crea un <strong>repositorio privado</strong> llamado <em style="color:var(--go)">collectavault-data</em></div></li>
+      <li><div class="sn">2</div><div>Tu avatar → <strong>Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token</strong> → activa solo el permiso <em style="color:var(--go)">repo</em> → copia el token (<em>ghp_...</em>)</div></li>
+      <li><div class="sn">3</div><div>Rellena y pulsa Conectar</div></li>
+    </ol>
+    <label class="lbl">Usuario de GitHub</label>
+    <input class="inp" id="gh-owner" placeholder="tu-usuario">
+    <label class="lbl">Repositorio</label>
+    <input class="inp" id="gh-repo" value="collectavault-data">
+    <label class="lbl">Token personal (ghp_...)</label>
+    <input class="inp" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx">
+    <div class="err" id="sp2-err"></div>
+    <div class="row">
+      <button class="btn btn-g" onclick="showSP(1)">← Atrás</button>
+      <button class="btn btn-p" id="gh-btn" onclick="connectGH()">🔗 Conectar →</button>
+    </div>
+  </div>
+  <div id="sp3" style="display:none">
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <div style="font-family:var(--fh);font-size:18px;font-weight:800;margin-bottom:8px">¡GitHub conectado!</div>
+      <p>Tus datos se guardarán automáticamente en tu repositorio GitHub privado cada vez que guardes.</p>
+      <button class="btn btn-p" onclick="finishSetup()">🚀 Comenzar →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- AUTH -->
+<div id="auth">
+<div class="card">
+  <div class="auth-logo">📚 CollectaVault</div>
+  <div class="auth-tag">Tu colección · En la nube</div>
+  <div id="auth-storage"></div>
+  <div style="font-size:11px;color:var(--mu);margin-bottom:7px">Acceso rápido</div>
+  <div class="quick">
+    <button class="qbtn" style="background:rgba(124,106,247,.3);border-color:rgba(124,106,247,.5)" onclick="qlogin('jose')">Jose</button>
+    <button class="qbtn" style="background:rgba(247,106,138,.3);border-color:rgba(247,106,138,.5)" onclick="qlogin('lola')">Lola</button>
+    <button class="qbtn" style="background:rgba(106,247,200,.2);border-color:rgba(106,247,200,.5);color:#ddd" onclick="qlogin('mariajo')">Mariajo</button>
+  </div>
+  <div style="text-align:center;color:var(--mu);font-size:11px;margin:10px 0">── o con email ──</div>
+  <div class="tabs">
+    <button class="tab on" id="tab-in" onclick="setTab('in')">Entrar</button>
+    <button class="tab" id="tab-up" onclick="setTab('up')">Registrarse</button>
+  </div>
+  <div id="auth-name-g" style="display:none">
+    <label class="lbl">Nombre</label>
+    <input class="inp" id="auth-name" placeholder="Tu nombre">
+  </div>
+  <label class="lbl">Email</label>
+  <input class="inp" id="auth-email" placeholder="tu@email.com">
+  <label class="lbl">Contraseña</label>
+  <input class="inp" id="auth-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAuth()">
+  <div class="err" id="auth-err"></div>
+  <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="doAuth()">Entrar</button>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="hdr">
+    <button class="mob-menu" onclick="toggleSB()" id="mob-btn">☰</button>
+    <div class="hdr-logo"><span>📚</span><div><span class="ac">Collecta</span>Vault<small> PRO</small></div></div>
+    <div class="gap"></div>
+    <div class="srch"><span class="srch-ico">🔍</span><input id="gsearch" type="text" placeholder="Buscar título, autor, editorial..." oninput="onSearch()"></div>
+    <div class="sync"><div class="dot dot-local" id="sdot"></div><span class="sync-lbl" id="slbl">local</span></div>
+    <button class="add-btn" onclick="newBook()" title="Añadir">+</button>
+    <div class="usr" onclick="go('profile')">
+      <div class="av" id="hav"></div>
+      <span id="huname" style="font-size:13px;font-weight:500"></span>
+    </div>
+  </header>
+  <div class="layout">
+    <nav class="sidebar" id="sb">
+      <div class="nl">Principal</div>
+      <button class="ni on" data-pg="dash" onclick="go('dash')"><span class="ni-ico">🏠</span>Dashboard</button>
+      <button class="ni" data-pg="col" onclick="go('col')"><span class="ni-ico">📚</span>Mi Colección<span class="ni-cnt" id="nc-tot">0</span></button>
+      <button class="ni" onclick="newBook()"><span class="ni-ico">➕</span>Añadir</button>
+      <div class="nl">Estado</div>
+      <button class="ni" onclick="qf('COMPLETADA')"><span class="ni-ico">✅</span>Completas<span class="ni-cnt" id="nc-com">0</span></button>
+      <button class="ni" onclick="qf('INCOMPLETA')"><span class="ni-ico">📂</span>Incompletas<span class="ni-cnt" id="nc-inc">0</span></button>
+      <button class="ni" onclick="qf('EN EMISIÓN')"><span class="ni-ico">📡</span>En emisión<span class="ni-cnt" id="nc-emi">0</span></button>
+      <div class="nl">Más</div>
+      <button class="ni" data-pg="profile" onclick="go('profile')"><span class="ni-ico">⚙️</span>Ajustes</button>
+      <div class="sb-gap"></div>
+      <div class="sb-foot">
+        <button class="ni" onclick="logout()" style="color:var(--re)"><span class="ni-ico">🚪</span>Salir</button>
+      </div>
+    </nav>
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page on" id="pg-dash">
+        <div class="phdr">
+          <div><div class="ptitle" id="d-greet">Hola 👋</div><div class="psub" id="d-date"></div></div>
+          <button class="btn btn-p btn-sm" onclick="newBook()">+ Añadir</button>
+        </div>
+        <div class="stats" id="d-stats"></div>
+        <div class="si-warn" id="d-storage"></div>
+        <div style="margin-top:18px">
+          <div style="font-family:var(--fh);font-size:14px;font-weight:700;margin-bottom:10px">⭐ Últimas modificadas</div>
+          <div class="bgrid" id="d-recent"></div>
+        </div>
+      </div>
+
+      <!-- COLECCIÓN -->
+      <div class="page" id="pg-col">
+        <div class="phdr">
+          <div><div class="ptitle">Mi Colección</div><div class="psub" id="c-sub">0 títulos</div></div>
+          <div style="display:flex;gap:7px;align-items:center">
+            <div class="vtoggle">
+              <button class="vbtn on" id="vg" onclick="setView('g')">⊞</button>
+              <button class="vbtn" id="vl" onclick="setView('l')">☰</button>
+            </div>
+            <button class="btn btn-p btn-sm" onclick="newBook()">+ Añadir</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="chips">
+            <button class="chip on" data-f="ALL" onclick="setF('ALL')">Todos</button>
+            <button class="chip" data-f="COMPLETADA" onclick="setF('COMPLETADA')">✅ Completa</button>
+            <button class="chip" data-f="INCOMPLETA" onclick="setF('INCOMPLETA')">📂 Incompleta</button>
+            <button class="chip" data-f="EN EMISIÓN" onclick="setF('EN EMISIÓN')">📡 En emisión</button>
+            <button class="chip" data-f="SIN DATOS" onclick="setF('SIN DATOS')">❓ Sin datos</button>
+          </div>
+          <div class="gap"></div>
+          <select class="fsel" onchange="setSort(this.value)">
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+            <option value="editorial">Editorial</option>
+            <option value="rating">⭐ Valoración</option>
+            <option value="recent">Más reciente</option>
+          </select>
+        </div>
+        <div id="c-container"></div>
+        <div class="pgn" id="c-pgn"></div>
+      </div>
+
+      <!-- AÑADIR / EDITAR -->
+      <div class="page" id="pg-add">
+        <div class="phdr">
+          <div><div class="ptitle" id="add-h">➕ Añadir</div><div class="psub">Manga · Cómic · Libro</div></div>
+          <button class="btn btn-g btn-sm" onclick="go('col')">← Cancelar</button>
+        </div>
+        <div class="fcard">
+          <div class="fsec" style="border:none;margin-top:0;padding-top:0">📸 Fotos de portada</div>
+          <div class="upload-z" onclick="trigUpload()" ondragover="event.preventDefault();this.style.borderColor='var(--ac)'" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault();this.style.borderColor='';handleFiles([...event.dataTransfer.files])">📷 Toca para añadir foto · o arrastra imágenes aquí</div>
+          <input type="file" id="f-imgs" accept="image/*" multiple capture="environment" style="display:none" onchange="onImgs(event)">
+          <div class="img-prevs" id="f-prevs"></div>
+          <div class="fsec">📖 Datos</div>
+          <div class="fgrid">
+            <div class="ffull"><label class="lbl">Título *</label><input class="inp" id="f-titulo" placeholder="Título completo"></div>
+            <div><label class="lbl">Estado</label><select class="inp" id="f-situacion"><option value="COMPLETADA">✅ Completada</option><option value="INCOMPLETA">📂 Incompleta</option><option value="EN EMISIÓN">📡 En emisión</option><option value="SIN DATOS">❓ Sin datos</option></select></div>
+            <div><label class="lbl">Editorial</label><input class="inp" id="f-editorial" placeholder="Ej: Ivrea"></div>
+            <div><label class="lbl">Autor</label><input class="inp" id="f-autor" placeholder="Autor principal"></div>
+            <div><label class="lbl">Guión</label><input class="inp" id="f-guion" placeholder="Guionista"></div>
+            <div><label class="lbl">Dibujo</label><input class="inp" id="f-dibujo" placeholder="Dibujante"></div>
+            <div><label class="lbl">Tomos que tengo</label><input class="inp" id="f-tomos_tengo" placeholder="Ej: 1-2-3"></div>
+            <div><label class="lbl">Tomos España</label><input class="inp" id="f-tomos_esp"></div>
+            <div><label class="lbl">Tomos Japón</label><input class="inp" id="f-tomos_jap"></div>
+          </div>
+          <div class="fsec">📝 Notas</div>
+          <div class="fgrid">
+            <div class="ffull"><label class="lbl">Sinopsis</label><textarea class="inp" id="f-sinopsis" rows="4" placeholder="Resumen..."></textarea></div>
+            <div class="ffull"><label class="lbl">Comentarios</label><textarea class="inp" id="f-comentarios" rows="3" placeholder="Tu opinión..."></textarea></div>
+          </div>
+          <div class="fsec">⭐ Valoración</div>
+          <div id="f-stars" style="display:flex;gap:6px;font-size:26px;margin-bottom:18px;cursor:pointer"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-p" onclick="saveBook()" id="f-save">💾 Guardar</button>
+            <button class="btn btn-g" onclick="go('col')">Cancelar</button>
+            <button class="btn btn-d btn-sm" id="f-del" style="display:none;margin-left:auto" onclick="deleteBook()">🗑️ Eliminar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AJUSTES -->
+      <div class="page" id="pg-profile">
+        <div class="phdr"><div class="ptitle">⚙️ Ajustes</div></div>
+        <div class="scard">
+          <div class="sh">👤 Perfil</div>
+          <div id="p-user" style="background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:12px"></div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn btn-g btn-sm" onclick="exportBak()">📥 Exportar backup JSON</button>
+            <button class="btn btn-d btn-sm" onclick="clearAll()">🗑️ Borrar mis datos</button>
+          </div>
+        </div>
+        <div class="scard">
+          <div class="sh">☁️ Almacenamiento</div>
+          <div id="p-storage"></div>
+          <div style="margin-top:10px" id="gh-cfg-box" style="display:none">
+            <label class="lbl" style="margin-top:10px">Usuario GitHub</label>
+            <input class="inp" id="p-owner" placeholder="usuario">
+            <label class="lbl">Repositorio</label>
+            <input class="inp" id="p-repo" value="collectavault-data">
+            <label class="lbl">Token (ghp_...)</label>
+            <input class="inp" id="p-token" type="password" placeholder="ghp_xxx">
+            <button class="btn btn-p btn-sm" style="margin-top:4px" onclick="saveGHCfg()">Guardar y conectar</button>
+          </div>
+          <button class="btn btn-g btn-sm" style="margin-top:10px" onclick="toggleGHCfg()">⚙️ Configurar GitHub</button>
+        </div>
+        <div class="scard">
+          <div class="sh">📊 Estadísticas</div>
+          <div id="p-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div id="modal-bg" class="modal-bg" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="mbody"><div id="modal-body"></div></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// JOSE DATA (321 títulos del Excel REGISTROCOMIC.xlsx)
+// ══════════════════════════════════════════════════════
+const JOSE_DATA = [{"id":1,"titulo":"10TH You and I fell in love with the same person","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"Yuko Inari","dibujo":"Yuko Inari","autor":"","editorial":"IVREA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":2,"titulo":"5 CENTIMETROS POR SEGUNDO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MAKOTO SHINKAI","dibujo":"YUKIKO SEIKE","autor":"","editorial":"PLANETA COMIC","sinopsis":"Después de graduarse en la escuela primaria, Takaki Toono y Akari Shinohara fueron por caminos separados a pesar de lo que sentían el uno por el otro. Lo único que pasó entre ellos fue el tiempo. Un día, en medio de una tormenta de nieve, Takaki finalmente fue a ver a Akari...","valoracion":0,"imagenes":[]},{"id":3,"titulo":"75 AÑOS: LA EDAD MODERNA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Recopilatorio histórico de Marvel celebrando 75 años.","valoracion":0,"imagenes":[]},{"id":4,"titulo":"A SILENT VOICE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7","tomos_esp":"7","tomos_jap":"7","guion":"YOSHITOKI OIMA","dibujo":"YOSHITOKI OIMA","autor":"","editorial":"MILKY WAY EDICIONES","sinopsis":"\"Desearía no habernos conocido nunca. Desearía poder encontrarnos de nuevo.\" La historia gira en torno a Shôko Nishimiya, una estudiante de primaria que es sorda y que al cambiarse de colegio comienza a sentir el bullying de sus nuevos compañeros. Uno de los principales responsables es Ishida Shôya quien termina por forzar que Nishimiya se cambie de escuela. Años después, Ishida busca la redención de sus malas acciones.","valoracion":0,"imagenes":[]},{"id":5,"titulo":"ADRENALYNN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"DANIEL EGELAND","editorial":"WORD COMICS","sinopsis":"","valoracion":0,"imagenes":[]},{"id":6,"titulo":"AGHARTA","situacion":"INCOMPLETA","comentarios":"SERIE CANCELADA ESPAÑA SOLO 9 TOMOS","tomos_tengo":"1-2-3-4-5-6-7-8-9","tomos_esp":"9","tomos_jap":"11","guion":"Takahal Matsumoto","dibujo":"Takahal Matsumoto","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"En un mundo desolado, las bandas armadas toman todo aquello que desean. Juju abandona ese camino cuando conoce a una misteriosa joven que posee una gran fuerza. Y esa fuerza sólo se puede controlar con cadenas.¿Cuál es el motivo?","valoracion":0,"imagenes":[]},{"id":7,"titulo":"ALTER EGO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"ANA C. SANCHEZ","dibujo":"ANA C. SANCHEZ","autor":"ANA C. SANCHEZ","editorial":"PLANETA COMIC","sinopsis":"Noel siempre ha estado enamorada de su mejor amiga Elena, pero nunca se ha atrevido a confesar sus sentimientos. Cuando su amiga empieza a salir con un chico, el mundo de Noel se derrumba al ver que su oportunidad en el amor se escapa.","valoracion":0,"imagenes":[]},{"id":8,"titulo":"AMOR AL DESNUDO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MAYU SHINJO","dibujo":"MAYU SHINJO","autor":"MAYU SHINJO","editorial":"IVREA","sinopsis":"En este tomo autoconclusivo, Mayu Shinjo, nos muestra su lado cómico (casi que se parodia a si misma, demostrando que además de talento también tiene un gran sentido del humor) . El chico guapo del insti se enamora de la empollona. ¡Y la empollona pasa de él como de la...","valoracion":0,"imagenes":[]},{"id":9,"titulo":"ANGEL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"25","tomos_esp":"25","tomos_jap":"","guion":"","dibujo":"","autor":"U-JIN","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":10,"titulo":"ANJO LA CHICA TRAVIESA","situacion":"INCOMPLETA","comentarios":"SERIE ABIERTA","tomos_tengo":"1-2-3","tomos_esp":"14","tomos_jap":"14","guion":"YUICHI KATO","dibujo":"YUICHI KATO","autor":"","editorial":"KITSUNE MANGA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":11,"titulo":"ANOHANA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"","autor":"","editorial":"IVREA","sinopsis":"Unos amigos de la infancia dejan de mantener contacto tras la muerte de Meiko Honma; la chica vuelve como fantasma para pedir que cumplan un deseo.","valoracion":0,"imagenes":[]},{"id":12,"titulo":"ASCENSION","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"12","tomos_jap":"22","guion":"","dibujo":"","autor":"DAVE FINCH BATT","editorial":"PLANETA DAGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":13,"titulo":"ASEDIO (SIERRA)","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"","autor":"BRIAN MICHAEL BENDIS - OLIVER COIPEL - MICHAEL LARK","editorial":"comic","sinopsis":"Evento Marvel que presenta el asalto a Asgard y sus consecuencias para los héroes.","valoracion":0,"imagenes":[]},{"id":14,"titulo":"ASOMBROSO SPIDERMAN POR STRACZYNSKI Nº6","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"BEST OF MARVEL","autor":"STRACZYNSKI","editorial":"BEST OF MARVEL","sinopsis":"Número dedicado al arco de Straczynski en Spider-Man.","valoracion":0,"imagenes":[]},{"id":15,"titulo":"ASTERIX Y OBELIX","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":16,"titulo":"AVENTURAS DE DON QUIJOTE (I y II)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Adaptación ilustrada de la obra clásica de Cervantes.","valoracion":0,"imagenes":[]},{"id":17,"titulo":"BASILISK  The Kouga Ninja Scrolls","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"5","tomos_jap":"5","guion":"Yamada Futârô","dibujo":"Masaki Segawa","autor":"Yamada Futârô","editorial":"IVREA","sinopsis":"Los clanes Kouga Manjidani e Iga Tsubagakure llevan siglos enfrentados... (sinopsis resumida)","valoracion":0,"imagenes":[]},{"id":18,"titulo":"BASILISK  The Ouka Ninja Scrolls","situacion":"EN EMISIÓN","comentarios":"POR COLECCIONAR","tomos_tengo":"","tomos_esp":"7","tomos_jap":"7","guion":"Yamada Futârô","dibujo":"Masaki Segawa","autor":"Yamada Futârô","editorial":"IVREA","sinopsis":"Yutaka Aoi es un chico que percibe el mundo a través de la música. Traduce los sonidos de la ciudad en melodías y las canciones le emocionan hasta el punto de hacerle llorar. Al mudarse a Kawami y comenzar la secundaria, entra en el coro del instituto, donde sorprende a todos con su cristalina voz de soprano. Junto a él, iremos conociendo a los demás integrantes del coro, así como a sus familias y a sus profesores. Pero la adolescencia es una época de transición y los cambios no tardarán en afectar a sus vidas y a la propia voz de Yutaka.","valoracion":0,"imagenes":[]},{"id":19,"titulo":"BATEADORES","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11","tomos_esp":"11","tomos_jap":"11","guion":"","dibujo":"","autor":"MITSURU ADACHI","editorial":"EDICIONES MANGA","sinopsis":"Teniendo como trasfondo principal el béisbol, la historia narra el triángulo amoroso inicial entre los hermanos Uesugi (Kazuya y Tatsuya) y su hermosa vecina Minami Asakura, y la posterior historia de superación y amor entre ellos cuando la muerte cruza trágicamente sus vidas.","valoracion":0,"imagenes":[]},{"id":20,"titulo":"BATEADORES NORMA EDITORIAL","situacion":"INCOMPLETA","comentarios":"LOS TOMOS ESPAÑOLES LLEVAN 3 DE LOS JAPONESES PERO EN ESPAÑA NO SE TERMINO SU EDICION","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12","tomos_esp":"12","tomos_jap":"26","guion":"Mitsuru Adachi","dibujo":"Mitsuru Adachi","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Teniendo como trasfondo principal el béisbol, la historia narra el triángulo amoroso inicial entre los hermanos Uesugi (Kazuya y Tatsuya) y su hermosa vecina Minami Asakura, y la posterior historia de superación y amor entre ellos cuando la muerte cruza trágicamente sus vidas.","valoracion":0,"imagenes":[]},{"id":21,"titulo":"BATMAN CIRCULO SIN FIN","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"KEVIN SMITH","dibujo":"WALTER FLANAGAN","autor":"","editorial":"PLANETA DEAGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":22,"titulo":"BATMAN EL LARGO HALLOWEEN","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"JEB LOEB","dibujo":"TIM SALE","autor":"","editorial":"DC","sinopsis":"","valoracion":0,"imagenes":[]},{"id":23,"titulo":"BATMAN VICTORIA OSCURA","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"JEB LOEB","dibujo":"TIM SALE","autor":"","editorial":"DC","sinopsis":"","valoracion":0,"imagenes":[]},{"id":24,"titulo":"BATMAN: EL CABALLERO MÁS OSCURO (adapt./varios)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"DC","autor":"ALAN BURNETT-PAUL DINI-TY TEMPLETON","editorial":"Versión/colección con guionistas de animación sobre el mito de Batman.","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":25,"titulo":"BATTLE CHASERS EL RETORNO","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"","editorial":"PLANETA DEAGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":26,"titulo":"BATTLE CHASERS Nº (1,2,3,4,5","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"5","tomos_jap":"","guion":"MADUREIRA","dibujo":"SHARRIETT","autor":"","editorial":"WILD STORM","sinopsis":"","valoracion":0,"imagenes":[]},{"id":27,"titulo":"BATTLE CLUB","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6","tomos_esp":"6","tomos_jap":"6","guion":"YUJI SHIOZAKI","dibujo":"YUJI SHIOZAKI","autor":"YUJI SHIOZAKI","editorial":"IVREA","sinopsis":"Mokichi quiere aprovechar su ingreso en un nuevo instituto para desterrar su condición de pringao total. Es hora de hacerse hombre, es hora demostrar que es fuerte... ¡Paf! Ya al entrar, Tamako, una de las integrantes del poderoso club de lucha libre, le hace ver las estrellas. Como ésto no puede quedar así, Mokichi ingresa al club dispuesto a limpiar su nombre, vencer a Tamako y... perder su virginidad. Acción, sexo y comedia en el nuevo manga del autor de Ikkitousen: Battle Club.","valoracion":0,"imagenes":[]},{"id":28,"titulo":"BATTLE CLUB 2ND STAGE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"YUJI SHIOZAKI","dibujo":"YUJI SHIOZAKI","autor":"YUJI SHIOZAKI","editorial":"IVREA","sinopsis":"Continúan los demenciales enfrentamientos de Tamako, Mokichi y compañía contra la peligrosa organización NOB. ¡Más peleas! ¡Más personajes! ¡Más fan service del que jamás habéis pensado -ni habéis pedido-! Todo eso y mucho más en la nueva etapa del popular manga Battle Club, de Yuji Shiozaki, el autor que mejor combina acción y bragas.","valoracion":0,"imagenes":[]},{"id":29,"titulo":"BLOOD RAIN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9","tomos_esp":"9","tomos_jap":"9","guion":"MIO MURAO","dibujo":"MIO MURAO","autor":"","editorial":"IVREA","sinopsis":"Uno a uno, los viejos compañeros de béisbol de Kumi Aihara están siendo asesinados en las noches de lluvia... Nada se sabe del asesino en serie, salvo que se oculta en las sombras vistiendo un impermeable... ¡¿Cuál será su verdadero objetivo?!","valoracion":0,"imagenes":[]},{"id":30,"titulo":"BLOOM INTO YOU","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"8","tomos_jap":"8","guion":"NAKATANI NIO","dibujo":"NAKATANI NIO","autor":"","editorial":"PLANETA COMIC","sinopsis":"Yû Koita acaba de empezar bachillerato y tiene problemas porque no sabe qué es enamorarse de alguien, cuando ve a un chico declarándose a Tôko Nanami, una estudiante de segundo del Consejo Estudiantil. Yû se siente identificada con Tôko, que dice que nunca ha sentido nada cuando se le han declarado, sea quien sea... pero entonces esta misma Tôko le suelta unas palabras que no se esperaba: “Creo que estás empezando a gustarme”.","valoracion":0,"imagenes":[]},{"id":31,"titulo":"BLOOM INTO YOU ANTOLOGIA","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"","tomos_esp":"2","tomos_jap":"2","guion":"NAKATANI NIO","dibujo":"NAKATANI NIO","autor":"","editorial":"PLANETA COMIC","sinopsis":"más historias de relaciones incipientes protagonizadas por Yû, Tôko y todos tus personajes favoritos! Trajes de maid, besos robados durante las reuniones del consejo estudiantil, Tôko en versión chibi y la hora del baño con Riko y Miyako. Todo eso y más s","valoracion":0,"imagenes":[]},{"id":32,"titulo":"BOY MEETS MARIA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"PEYO","dibujo":"PEYO","autor":"PEYO","editorial":"MILKY WAY EDICIONES","sinopsis":"Taiga, que desde pequeño ha sentido fascinación por los héroes, cree haber encontrado a la chica de su vida nada más empezar el bachillerato: la estrella del club de teatro, a quien todo el mundo llama María. Su brillante actuación en la representación de bienvenida a los nuevos alumnos le roba el corazón de tal manera que decide correr a pedirle que se convierta en su heroína. Sin embargo, al ir a buscarla para declararle su amor, descubre que la belleza en cuestión en realidad es un chico…","valoracion":0,"imagenes":[]},{"id":33,"titulo":"BRAVE 10","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"SHIMOTSUKI KAIRI","editorial":"PANINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":34,"titulo":"BUSCANDO AL HOMBRE IDEAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"KAYONO","dibujo":"KAYONO","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":35,"titulo":"CAMINO DE SANTIAGO EN COCHE","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":36,"titulo":"CAPITAN AMERICA (ANUAL 2000)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"CASEY-RAIMONDI-WONG","editorial":"MARVEL COMICS","sinopsis":"","valoracion":0,"imagenes":[]},{"id":37,"titulo":"CAPITÁN AMÉRICA Nº4","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Arco del Capitán América durante el relanzamiento editorial.","valoracion":0,"imagenes":[]},{"id":38,"titulo":"CHANGE 123","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 12","tomos_esp":"12","tomos_jap":"12","guion":"","dibujo":"IVREA","autor":"IKU SAKAGUCHI","editorial":"Acción/psicológico: protagonista con múltiples personalidades que desencadenan habilidades distintas.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":39,"titulo":"CHANGE UP","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"SHINJI IMAIZUMI","dibujo":"SHINJI IMAIZUMI","autor":"SHINJI IMAIZUMI","editorial":"MANGALINE","sinopsis":"Tohma Nagasu se une al club de béisbol para poder ligar con las chicas, pero una lesión provocada por un accidente de tráfico le ha hecho perder toda su fuerza al lanzar. Sólo Kaede, manager del equipo, conoce su verdadero potencial y espera que Tohma pueda recuperarse. Un día, se celebra un partido amistoso contra el Instituto Wakasagi, liderado por el prometido de Kaede, Shohei Mizuku. El nivel de Mizuku es superior al de su instituto, pero se da cuenta de que en Tohma tiene a su verdadero rival. Tohma sale a jugar, pero aunque lanza muy rápido, sus tiros van desviados. Pero, Shohei retira su compromiso con Kaede tras causarle un gran shock el no poder batear uno de los tiros de Tohma. Tohma se entrena duro por Kaede para derrotar a Shohei, ya que el sueño de Kaede es llegar al Koshien y el de Tohma es conseguir llevarla.","valoracion":0,"imagenes":[]},{"id":40,"titulo":"CHOBITS (COMPLETO)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8","tomos_esp":"8","tomos_jap":"8","guion":"CLAMP","dibujo":"CLAMP","autor":"CLAMP","editorial":"NORMA EDITORIAL","sinopsis":"Hideki Motosuwa, un joven de 18 años, vivía en el campo hasta que reprobó su entrada en la Universidad, por ello decide prepararse para intentarlo de nuevo, y se muda a la ciudad.\n\nAl llegar a Tokio, se da cuenta de que casi todas las personas poseen Persocons, que son computadoras con forma humana, lo que las hace más atractivas para los compradores.\n\nLa noche de su llegada, mientras iba de regreso a casa, ve el cuerpo de una mujer de pelo rubio, cubierto por vendas blancas, y tirado en un basurero. Lo primero que piensa es que alguien la había asesinado, pero luego se fija en la forma de sus orejas, y se da cuenta de que es una Persocon abandonada.\n\nUna vez en su casa, y después de muchos intentos, Hideki logró hacer funcionar a esta Persocon, que al despertar lo único que puede decir es \"Chii\". Por ello, Hideki decide bautizarla con ese nombre.","valoracion":0,"imagenes":[]},{"id":41,"titulo":"CHUNYAN LA NUEVA LEYENDA SHIN SHUNKADEN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"SHIN SHUNKADEN","dibujo":"","autor":"CLAMP","editorial":"MANGALINE","sinopsis":"","valoracion":0,"imagenes":[]},{"id":42,"titulo":"CICCA DUM-DUM: 4 - CÁRCEL DE MUJERES","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"4","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"COLECCIÓN PENTHOUSE","autor":"BERNET TRILLO","editorial":"Tomo con historias subidas de tono centradas en prisión femenina; edición incompleta.","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":43,"titulo":"CITY HUNTER","situacion":"COMPLETADA","comentarios":"SERIE CANCELADA ESPAÑA SOLO 24 TOMOS","tomos_tengo":"","tomos_esp":"24","tomos_jap":"35","guion":"Tsukasa Hōjō","dibujo":"Tsukasa Hōjō","autor":"","editorial":"MANGALINE","sinopsis":"","valoracion":0,"imagenes":[]},{"id":44,"titulo":"City Hunter (Complete Edition) (Arechi)","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"32","tomos_jap":"32","guion":"Tsukasa Hōjō","dibujo":"","autor":"Tsukasa Hōjō","editorial":"ARECHI MANGA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":45,"titulo":"CIVIL WAR","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARK MILLAR","dibujo":"STEVE MCNIVEN","autor":"MARK MILLAR","editorial":"MARVEL PANINI COMIC","sinopsis":"Evento que enfrenta a superhéroes por el control y registro de poderes.","valoracion":0,"imagenes":[]},{"id":46,"titulo":"CIVIL WAR (INTEGRAL)","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"Evento editorial que divide a la comunidad de superhéroes en torno a la ley y el control.","autor":"MARK MILLAR - STEVE MCNIVEN","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":47,"titulo":"CIVIL WAR: SPIDERMAN","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"J. MICHAEL STRACZYNSKI","dibujo":"GARNEY","autor":"J. MICHAEL STRACZYNSKI","editorial":"MARVEL PANINI COMIC","sinopsis":"Historias relacionadas con el papel de Spider-Man durante Civil War.","valoracion":0,"imagenes":[]},{"id":48,"titulo":"CONTEST OF CHAMPIONS COMBATE FINAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"CLAREMONT- JIMENEZ- ALPUENTE","dibujo":"","autor":"","editorial":"","sinopsis":"FORUM","valoracion":0,"imagenes":[]},{"id":49,"titulo":"CROSS GAME","situacion":"EN EMISIÓN","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"11","tomos_jap":"17","guion":"Mitsuru Adachi","dibujo":"Mitsuru Adachi","autor":"MITSURU ADACHI","editorial":"DISTRITO MANGA","sinopsis":"Un coming-of-age emblemático que mezcla el amor y el deporte; Ko entrena para llegar al Koshien.","valoracion":0,"imagenes":[]},{"id":50,"titulo":"CROSS HEART","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"ANA C. SANCHEZ","dibujo":"ANA C. SANCHEZ","autor":"ANA C. SANCHEZ","editorial":"MOONDUST","sinopsis":"Cross Heart es una historia de amor entre Haru, una adolescente enérgica y determinada, y Kotomi, que siempre está envuelta en un aura de tristeza. Haru la observa con curiosidad hasta que ocurre algo que le hace actuar. Poco a poco Kotomi se ve arropada por la calidez y el afecto de Haru haciéndola sentir feliz de nuevo, mientras que Haru casi sin darse cuenta empiezan a enamorarse de ella. ¿Podrá Kotomi confesar su mayor secreto a Haru y librarse del dolor que azota su corazón?","valoracion":0,"imagenes":[]},{"id":51,"titulo":"CUANDO NOS DESPEDIMOS DE LAS BICICLETAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"Sanagi Sakuragawa","dibujo":"Yufushi","autor":"","editorial":"ARECHI MANGA","sinopsis":"¡¡Llega el cómic de \"My Hime\" con una historia totalmente original gracias al apoyo incondicional del equipo del anime!!","valoracion":0,"imagenes":[]},{"id":52,"titulo":"DANGER GIRL Nº (1,2,3,4,5,6,7,8)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1,2,3,4,5,6,7,8","tomos_esp":"8","tomos_jap":"8","guion":"","dibujo":"","autor":"","editorial":"WORD COMICS","sinopsis":"","valoracion":0,"imagenes":[]},{"id":53,"titulo":"DAREDEVIL EL HOMBRE SIN MIEDO Nº (1,2,3,4","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2-3-4-","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":54,"titulo":"DAREDEVIL EL HOMBRE SIN MIEDO Nº 5","situacion":"INCOMPLETA","comentarios":"EXCELSION BIBLIOTECA MARVEL","tomos_tengo":"5","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"","autor":"","editorial":"MARVEL COMICS","sinopsis":"","valoracion":0,"imagenes":[]},{"id":55,"titulo":"DAREDEVIL: BORN AGAIN","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"Clásico arco de Daredevil considerado imprescindible en su bibliografía.","autor":"MILLER - MAZZUCCHELLI","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":56,"titulo":"DARK HEARTS ANTOLOGIA GOTICA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"NOWEVOLUTION","sinopsis":"Antología gótica de historias cortas con tono oscuro y melancólico.","valoracion":0,"imagenes":[]},{"id":57,"titulo":"DARKCHYLDE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"","autor":"RANDY QUEEN","editorial":"PLANETA DAGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":58,"titulo":"DEL CIELO AL INFIERNO (completo)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18-19-20-21-22","tomos_esp":"22","tomos_jap":"22","guion":"OH GREAT","dibujo":"OH GREAT","autor":"OH! GREAT","editorial":"NORMA EDITORIAL","sinopsis":"Dos nuevos alumnos entran en el instituto y todo se revoluciona; Soichiro Nagi y Bob Makihara en artes marciales.","valoracion":0,"imagenes":[]},{"id":59,"titulo":"DESEADO POR LA MUERTE","situacion":"COMPLETADA","comentarios":"CONCLUIDA","tomos_tengo":"1-2","tomos_esp":"2 (4 EN JAPO)","tomos_jap":"4 (2 EN ESPAÑOL)","guion":"Aoi Akashiro","dibujo":"Tsuyoshi Watanabe","autor":"AOI AKASHIRO/TSUYOSHI WATANABE","editorial":"EROTIC LINE","sinopsis":"","valoracion":0,"imagenes":[]},{"id":60,"titulo":"DIMENSION DIVERGENTE: EXABUL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"","guion":"FRANK PEÑAS","dibujo":"JAVIER MONJA","autor":"","editorial":"T-RAPTOR","sinopsis":"Cómic de ciencia ficción/aventura de autor español.","valoracion":0,"imagenes":[]},{"id":61,"titulo":"DIMENSION DIVERGENTE: SILVER NIGHT","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"FRANK PEÑAS","dibujo":"JAVIER MONJA","autor":"","editorial":"T-RAPTOR","sinopsis":"Segunda entrega de la serie de ciencia ficción de Frank Peña y Javier Monja.","valoracion":0,"imagenes":[]},{"id":62,"titulo":"DINASTÍA DE M","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"BRIAN M. BENDIS","dibujo":"OLIVIER COIPEL","autor":"BRIAN M. BENDIS","editorial":"MARVEL PANINI COMIC","sinopsis":"Evento oscuro que transforma la realidad de los mutantes tras la aparición de Magneto.","valoracion":0,"imagenes":[]},{"id":63,"titulo":"DNA2","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"5","tomos_jap":"5","guion":"MASAKAZU KATSURA","dibujo":"MASAKAZU KATSURA","autor":"MASAKAZU KATSURA","editorial":"PLANETA AGOSTINI","sinopsis":"En un futuro donde el viaje en el tiempo y la alteración del ADN es una realidad, la sobrepoblación esta llevando a la humanidad hacia la extinción. Los investigadores se dan cuenta de la existencia de un humano en el siglo XX con un gen especial, el cual lo convirtió en un superhumano extremadamente fértil e irresistible a las mujeres. Esta persona tuvo 100 hijos los cuales heredaron ese gen y sus habilidades llegando cada uno a tener 100 hijos y así cada generación, convirtiéndose en la mayor causa de la superpoblación. A éste individuo se le conoce a lo largo de la historia como el Mega-Playboy.\nEl gobierno decide enviar a Karin al pasado para normalizar el ADN de esa persona, y de esta forma disminuir el problema en el futuro. Al llegar al pasado se encuentra con Junta, un joven que, a pesar de ser alérgico a las mujeres, corresponde un 99.9% con la descripción del Mega-Playboy. Karin, sin preocuparse por el 0.1% restante, le dispara una Bala DMC para alterar su ADN, pero cuando regresa a la máquina del tiempo, una llamada del futuro le informa que ha traído consigo la bala equivocada.","valoracion":0,"imagenes":[]},{"id":64,"titulo":"DON QUIJOTE DE LA MANCHA","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":65,"titulo":"DOUBT","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"YOSHIKI TONOGAI","dibujo":"YOSHIKI TONOGAI","autor":"","editorial":"IVREA","sinopsis":"Un vídeojuego para móviles llamado Rabbit Doubt se ha viralizado en Tokyo. En él, los jugadores son conejos que deben hacer todo lo que esté a su alcance para descubrir cuál de todos los demás conejos es en realidad un lobo disfrazado antes de que él mate a todos. El lobo, un jugador secretamente escogido al azar, debe usar su astucia para generar desconfianza entre todos los demás conejos y así, derrotándolos uno a uno, alzarse con la victoria.\n\nCuando cinco fanáticos de este juego deciden encontrarse en la vida real sólo por diversión, lo que menos esperaban era perder la consciencia y despertar atrapados en un edificio abandonado, con un código de barras tatuado en cada uno de sus cuerpos, y viendo a un cadáver colgado frente a ellos. ¿Serán capaces estos amigos virtuales de cooperar en el mundo real para saber qué es lo que sucede, antes de terminar siendo la comida del lobo?","valoracion":0,"imagenes":[]},{"id":66,"titulo":"DRAGON BALL COLECCIÓN SERIE AMARILLA EDICION ORIGINAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18-19-20-21-22-23-24-25-26-27-28-29-30-31-32-33-34-35-36-37-38-39-40-41-41-42-","tomos_esp":"42","tomos_jap":"42","guion":"AKIRA TORIYAMA","dibujo":"AKIRA TORIYAMA","autor":"AKIRA TORIYAMA","editorial":"PLANETA AGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":67,"titulo":"DRAGON BALL ILUSTRACIONES COMPLETAS (AKIRA TORIYAMA)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VICENTE RAMIREZ","editorial":"","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":68,"titulo":"DRAGON PINK","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"NORMA EDITORIAL","autor":"ITOYOKO","editorial":"Tomo de comedia/erótico de tono pícaro y gamberro.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":69,"titulo":"DURANTE LA TORMENTA","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"PABLO R COCA","dibujo":"","autor":"OCCIMORONS","editorial":"BRUGUERA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":70,"titulo":"EL ARMA DEFINITIVA  THE LAST LOVE SONG ON THIS LITTLE PLANET (original: Saishū Heiki Kanojo (最終兵器彼女) / Saikano)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7","tomos_esp":"7","tomos_jap":"7","guion":"SHIN TAKAHASHI","dibujo":"SHIN TAKAHASHI","autor":"SHIN TAKAHASHI","editorial":"GLENAT","sinopsis":"Dos estudiantes viven una intensa historia de amor mientras se ven inmersos en un grave conflicto mundial. Chise, la protagonista, esconde un secreto: su frágil cuerpo se transforma en una máquina de combate letal cuando su país la necesita. La cuestión es si ella y los que la rodean podrán sobrevivir a tal secreto. También conocido con el nombre de Saikano, este es uno de los manga más sorprendentes y originales de los últimos años.","valoracion":0,"imagenes":[]},{"id":71,"titulo":"EL CABALLERO ERRANTE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"GEORGE RR MARTIN","dibujo":"","autor":"","editorial":"DEBOLSILLO","sinopsis":"","valoracion":0,"imagenes":[]},{"id":72,"titulo":"EL CABALLERO VAMPIRO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 19","tomos_esp":"19","tomos_jap":"19","guion":"","dibujo":"PANINI MANGA","autor":"MATAURI HINO","editorial":"Serie de vampiros con tono oscuro y elementos de romance gótico.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":73,"titulo":"EL CASTIGADOR Nº7","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Número suelto del personaje El Castigador.","valoracion":0,"imagenes":[]},{"id":74,"titulo":"EL DIARIO DE ENDÔ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"KIBOOK EDICIONES","autor":"NOJICO HAYAKAWA","editorial":"Slice-of-life escolar sobre la relación de Tsuda con Endô y la timidez adolescente.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":75,"titulo":"EL JARDIN DE LAS PALABRAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MAKOTO SHINKAI","dibujo":"MIDORI MOTOHASHI","autor":"","editorial":"MILKY WAY","sinopsis":"Takao es un aprendiz de zapatero; conoce a una misteriosa mujer mayor y su relación se estrecha con el tiempo.","valoracion":0,"imagenes":[]},{"id":76,"titulo":"EL LADRON DEL RAYO PERCY JACKSON Y LOS DIOSES DEL OLIMPO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"ROBER VENDITTI","dibujo":"ATTILA FUTAKI","autor":"","editorial":"SALAMANDRA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":77,"titulo":"EL PECADO ORIGINAL TAKOPI","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"TAIZAN 5","dibujo":"TAIZAN 5","autor":"","editorial":"DISTRITO MANGA","sinopsis":"Una desgarradora historia en la que un extraterrestre busca ayudar a Shizuka, una niña que sufre bullying en la escuela.","valoracion":0,"imagenes":[]},{"id":78,"titulo":"EL PRINCIPE DEL MAR","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"KAORI OZAKI","dibujo":"KAORI OZAKI","autor":"","editorial":"MILKY WAY","sinopsis":"Para Matori, Mugi vive como un auténtico príncipe; una historia corta y dulce.","valoracion":0,"imagenes":[]},{"id":79,"titulo":"EL PRINCIPITO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"SALAMANDRA","autor":"ANTOINE DE SAINT EXUPÉRY","editorial":"Adaptación/edición ilustrada del clásico literario.","sinopsis":"book","valoracion":0,"imagenes":[]},{"id":80,"titulo":"EL PUPITRE DE AL LADO","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"10","tomos_jap":"10","guion":"Takuma Morishige","dibujo":"","autor":"","editorial":"Popular serie de entretenimiento escolar sobre las ocurrencias de Seki en clase.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":81,"titulo":"EL TIEMPO CONTIGO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"MAKOTO SHINKAI","dibujo":"WATARU KUBOTA","autor":"","editorial":"MILKY WAY","sinopsis":"El tiempo contigo es una historia de aprendizaje vital protagonizada por dos adolescentes; Hodaka y Hina, cuya relación cambiará sus vidas mientras intentan sobrevivir en Tokio.","valoracion":0,"imagenes":[]},{"id":82,"titulo":"ELLA Y SU GATO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MAKOTO SHINKAI","dibujo":"YAMAGUCHI TSUBASA","autor":"","editorial":"PLANETA COMIC","sinopsis":"Era un día lluvioso de comienzos de primavera. Ella me encontró”.\n\nEsta es la historia de una chica que vive sola y el gato que se encuentra un día de primavera. Ella descubre las alegrías y las penas de vivir independizada. El felino, llamado Chobi, se percata de cómo es el mundo gracias a la joven. Cuando están juntos, el tiempo pasa lentamente, pero la crueldad de la vida la acecha.","valoracion":0,"imagenes":[]},{"id":83,"titulo":"ENAMORADA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2 Y3","tomos_esp":"3","tomos_jap":"3","guion":"SAKI AIKAWA","dibujo":"","autor":"SAKI AIKAWA","editorial":"IVREA","sinopsis":"Historia romántica sobre Yuna, quien debe afrontar su pasado y aclarar sus sentimientos.","valoracion":0,"imagenes":[]},{"id":84,"titulo":"ENDROLL BACK","situacion":"COMPLETADA","comentarios":"MOZTROS","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"Kantetsu","dibujo":"Haruna Nakazato","autor":"","editorial":"MOZTROS","sinopsis":"Título completado publicado por MOZTROS.","valoracion":0,"imagenes":[]},{"id":85,"titulo":"ENSEÑAME MAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MAYU SHINJO","dibujo":"MAYU SHINJO","autor":"MAYU SHINJO","editorial":"IVREA","sinopsis":"Enséñame Más (Motto Oshiete). Esta reciente obra, que apareció en su país natal el año pasado, abarca cinco historias cortas de impecable factura. En ellas hace hincapié en los puntos que viene incursionando Mayu Shinjo en los últimos tiempos: relaciones tormentosas y apasionadas entre protagonistas masculinos y femeninos de personalidades opuestas, y -elemental- el sexo entre ellos. Lo más curioso es que el último capítulo es una sub-historia de lo que es su trabajo más aclamado y logrado: El Amante Dragon (Haou Airen).","valoracion":0,"imagenes":[]},{"id":86,"titulo":"ESAS COSAS QUE NO PESAN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"PABLO R COCA","dibujo":"","autor":"OCCIMORONS","editorial":"BRUGUERA","sinopsis":"Obra breve/único volumen con tono personal e intimista.","valoracion":0,"imagenes":[]},{"id":87,"titulo":"ESCUELA DE BRUJAS MAHOTSUKAITAI","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6","tomos_esp":"6","tomos_jap":"3","guion":"","dibujo":"","autor":"SHAMNEKO","editorial":"IVREA","sinopsis":"Comedia bizarra sobre un club de magia en el instituto donde todos están enamorados entre sí.","valoracion":0,"imagenes":[]},{"id":88,"titulo":"ESPECIAL MUTANTES 21 LOBEZNO 99 ANUAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"21","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"MARVEL COMICS","sinopsis":"Especial anual de Marvel con historias de Lobezno y mutantes.","valoracion":0,"imagenes":[]},{"id":89,"titulo":"ESPERO QUE SEAS FELIZ ZORRA","situacion":"EN EMISIÓN","comentarios":"GENERANDOSE","tomos_tengo":"1-2-3-4","tomos_esp":"6","tomos_jap":"6","guion":"Mizuki Kishikawa","dibujo":"Mizuki Kishikawa","autor":"","editorial":"IVREA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":90,"titulo":"EXCEL SAGA","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"KOSHI RIKDO","editorial":"SELECTAVISION","sinopsis":"Serie incompleta (edición en España), comedia absurda y satírica.","valoracion":0,"imagenes":[]},{"id":91,"titulo":"F.Compo (Family Compo) (Complete Edition) (Arechi)","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"","tomos_esp":"11","tomos_jap":"11","guion":"Tsukasa Hōjō","dibujo":"Tsukasa Hōjō","autor":"","editorial":"ARECHI MANGA","sinopsis":"Masahiko Yanagiba queda huérfano poco antes de empezar la universidad, por lo que su tío y su tía lo acogen en su hogar, lo que Masahiko acepta, pues en ello ve la posibilidad de disfrutar por fin de una vida familiar. Lo que no sabe es que los Wakanae esconden un secreto algo particular que pondrá su mundo patas arriba.\n\nF. Compo es, sin duda, una de las obras maestras de Tsukasa Hôjô, una comedia sobre el respeto a la diversidad, sobre el amor a la familia y la necesidad de encajar en un mundo distinto.","valoracion":0,"imagenes":[]},{"id":92,"titulo":"F.Compo (Family Compo) (MangaLine)","situacion":"INCOMPLETA","comentarios":"SERIE CANCELADA ESPAÑA SOLO 10 TOMOS","tomos_tengo":"del 1 al 10","tomos_esp":"10","tomos_jap":"14","guion":"Tsukasa Hōjō","dibujo":"Tsukasa Hōjō","autor":"","editorial":"MANGALINE","sinopsis":"Masahiko Yanagiba queda huérfano poco antes de empezar la universidad, por lo que su tío y su tía lo acogen en su hogar, lo que Masahiko acepta, pues en ello ve la posibilidad de disfrutar por fin de una vida familiar. Lo que no sabe es que los Wakanae esconden un secreto algo particular que pondrá su mundo patas arriba.\n\nF. Compo es, sin duda, una de las obras maestras de Tsukasa Hôjô, una comedia sobre el respeto a la diversidad, sobre el amor a la familia y la necesidad de encajar en un mundo distinto.","valoracion":0,"imagenes":[]},{"id":93,"titulo":"FAIRY GIRLS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"BOKU","dibujo":"BOKU","autor":"HIRO MASHIMA","editorial":"NORMA EDITORIAL","sinopsis":"¡EL NUEVO SPIN-OFF CON LAS CHICAS MÁS VALIENTES DEL GREMIO DE FAIRY TAIL!","valoracion":0,"imagenes":[]},{"id":94,"titulo":"FATHOM LA REINA DE HIELO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"MICHAEL TURN","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Volumen único de Fathom; fantasía gráfica.","valoracion":0,"imagenes":[]},{"id":95,"titulo":"FATHOM Nº (1,2,3,4,5,6,7,8,9,10,11)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11","tomos_esp":"11","tomos_jap":"","guion":"TURNER","dibujo":"ONEIL","autor":"","editorial":"PLANETA DEAGONSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":96,"titulo":"FATHOM Nº (1-11)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11","tomos_esp":"11","tomos_jap":"11","guion":"ONEIL","dibujo":"","autor":"TURNER","editorial":"PLANETA DEAGOSTINI","sinopsis":"Colección completa de Fathom (vols. 1–11).","valoracion":0,"imagenes":[]},{"id":97,"titulo":"FÉNIX Nº7","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Número del personaje Fénix en la colección renacentista.","valoracion":0,"imagenes":[]},{"id":98,"titulo":"FRUIT BASKET ANOTHER","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"NATSUKI TAKAYA","dibujo":"NATSUKI TAKAYA","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Secuela centrada en nuevos personajes (4 tomos).","valoracion":0,"imagenes":[]},{"id":99,"titulo":"FRUIT BASKET CIRCULO DE LECTORES (NO EMITIDA COMPLETA)","situacion":"COMPLETADA","comentarios":"SOLO SE EMITIERON 10 TOMOS LOS CUALES TENGO","tomos_tengo":"1-2-3-4-5-6-7-8-9-10","tomos_esp":"10","tomos_jap":"23","guion":"NATSUKI TAKAYA","dibujo":"NATSUKI TAKAYA","autor":"","editorial":"CIRCULO DE LECTORES","sinopsis":"Edición de club de lectura: solo 10 tomos publicados aquí; obra de 23 tomos en Japón.","valoracion":0,"imagenes":[]},{"id":100,"titulo":"FRUIT BASKET EDICION COLECCIONISTA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12","tomos_esp":"12","tomos_jap":"12","guion":"NATSUKI TAKAYA","dibujo":"NATSUKI TAKAYA","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":101,"titulo":"FRUIT BASKET NORMA","situacion":"INCOMPLETA","comentarios":"MUCHO ESFUERZO PARA RECOPILAR ESTA COLECCIÓN LA DOY POR PERDIDA","tomos_tengo":"TOMO 11","tomos_esp":"23","tomos_jap":"23","guion":"NATSUKI TAKAYA","dibujo":"NATSUKI TAKAYA","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":102,"titulo":"FUMANDO DETRÁS DEL SUPER","situacion":"EN EMISIÓN","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"7","tomos_jap":"7","guion":"Jinushi","dibujo":"Jinushi","autor":"","editorial":"PANINI MANGA","sinopsis":"Sasaki, oficinista, entabla relación con la cajera Yamada; comedia slice-of-life.","valoracion":0,"imagenes":[]},{"id":103,"titulo":"GEN 13 VOL. 2  Nº (1,35","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"","tomos_esp":"35","tomos_jap":"35","guion":"","dibujo":"","autor":"","editorial":"WORD COMICS","sinopsis":"","valoracion":0,"imagenes":[]},{"id":104,"titulo":"GIRL FRIENDS","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"5","tomos_jap":"5","guion":"MILK MORINAGA","dibujo":"MILK MORINAGA","autor":"","editorial":"PLANETA COMIC","sinopsis":"Yuri slice-of-life/romance entre dos chicas que exploran sus sentimientos y amistad.","valoracion":0,"imagenes":[]},{"id":105,"titulo":"GODEATH","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL AL 3","tomos_esp":"15","tomos_jap":"15","guion":"YUJI SHIOZAKI","dibujo":"","autor":"YUJI SHIOZAKI","editorial":"IVREA","sinopsis":"Historia ambientada en el siglo XVIII sobre una misteriosa mujer con poderes mortales.","valoracion":0,"imagenes":[]},{"id":106,"titulo":"GRANDES DEL HUMOR: MORTADELO Y FILEMÓN - SILENCIO SE RUEDA (Nº8)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Antología enfocada en el humor cinematográfico de la serie.","valoracion":0,"imagenes":[]},{"id":107,"titulo":"GUÍA PARA LECTORES DEL UNIVERSO MARVEL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"MARVEL PANINI COMIC","sinopsis":"Guía introductoria al universo Marvel con explicaciones y cronologías.","valoracion":0,"imagenes":[]},{"id":108,"titulo":"HACK","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"3","guion":"REI IZUMI","dibujo":"TALSUYA HAMAZAQUI","autor":"REI IZUMI","editorial":"NORMA EDITORIAL","sinopsis":"Historia ambientada en un mundo dominado por reglas de RPG donde un grupo de aventureros debe sobrevivir.","valoracion":0,"imagenes":[]},{"id":109,"titulo":"HIROSHIMA HADASHI NO GEN","situacion":"COMPLETADA","comentarios":"TOMO 1 DE MANGALINE NO HAY OTRO","tomos_tengo":"1-2-3-4-5-6-7","tomos_esp":"7","tomos_jap":"7","guion":"Keiji Nakazawa","dibujo":"Keiji Nakazawa","autor":"KEIJI NAKAZAWA","editorial":"MANGA CLASICOS","sinopsis":"Relato histórico y testimonial sobre la bomba de Hiroshima. Muy potente y emotivo.","valoracion":0,"imagenes":[]},{"id":110,"titulo":"HISTORIAS VICIOSAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 2","tomos_esp":"2","tomos_jap":"2","guion":"","dibujo":"MANGA X/NORMA","autor":"YUTAKA TANAKA","editorial":"Recopilación de relatos cortos de temática adulta y perversa.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":111,"titulo":"HORIMIYA","situacion":"COMPLETADA","comentarios":"MAYO 2025 EDICION ESPECIAL TOMO 17","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16+GUIA +MEMORIAL BOOK+17 EDI. ESPECIAL","tomos_esp":"16","tomos_jap":"16","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Rom-com escolar muy popular; edición especial recopilatoria con guía y memorial book.","valoracion":0,"imagenes":[]},{"id":112,"titulo":"HULK CAPITULO UNO (ANUAL 2000)","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Anual/Hulk - edición incompleta.","valoracion":0,"imagenes":[]},{"id":113,"titulo":"HUNGRY HEART","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"YOICHI TAKAHASHI","editorial":"IVREA","sinopsis":"Título incompleto en la colección; obra de Yoichi Takahashi.","valoracion":0,"imagenes":[]},{"id":114,"titulo":"I AM A HERO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"22","tomos_jap":"22","guion":"Kengo Hanazawa","dibujo":"Kengo Hanazawa","autor":"KENGO HANAZAWA","editorial":"NORMA EDITORIAL","sinopsis":"A sus 35 años, Hideo está atrapado en una vida mediocre, sufre continuas alucinaciones y está empezando a perder la razón, manteniendo filosóficas conversaciones con su amigo imaginario. Pero cuando el pánico y el caos se desatan en Tokio descubre, aterrorizado, que la realidad es mucho más espeluznante que sus fantasías. ¿Tendrá lo que hay que tener para ser un héroe?","valoracion":0,"imagenes":[]},{"id":115,"titulo":"I´´S BIBLIOTECA MANGA GRAPA","situacion":"COMPLETADA","comentarios":"COMPLETA GRAPA","tomos_tengo":"DEL 1 AL 30","tomos_esp":"30","tomos_jap":"15","guion":"","dibujo":"","autor":"MASAKAZU KATSURA","editorial":"PLANETA COMIC","sinopsis":"Seto Ichitaka es un estudiante de segundo año de instituto. Es elegido miembro del comité durante una fiesta de bienvenida a la que va con su compañera Yoshizuki Iori, a quien ama en secreto. Empiezan a intimar e Ichitaka invita a Iori a su habitación. De pronto, aparece una chica vestida solo con lencería y...","valoracion":0,"imagenes":[]},{"id":116,"titulo":"IRON MAN Nº6","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Recopilatorio de aventuras tempranas del Hombre de Hierro.","valoracion":0,"imagenes":[]},{"id":117,"titulo":"I''S TOMOS PLANETA","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"","autor":"MASAKAZU KATSURA","editorial":"PLANETA AGOSTINI","sinopsis":"Seto Ichitaka es un estudiante de segundo año de instituto. Es elegido miembro del comité durante una fiesta de bienvenida a la que va con su compañera Yoshizuki Iori, a quien ama en secreto. Empiezan a intimar e Ichitaka invita a Iori a su habitación. De pronto, aparece una chica vestida solo con lencería y...","valoracion":0,"imagenes":[]},{"id":118,"titulo":"IZUMAKI ESPIRAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"JUNJI ITO","dibujo":"JUNJI ITO","autor":"","editorial":"PLANETA COMIC","sinopsis":"ESTE PUEBLO ESTÁ CONTAMINADO CON ESPIRALES…\n\nKurouzu, un pequeño pueblo rodeado por la niebla en la costa de Japón, está maldito. Según Shûichi Saitô, el novio de la joven Kirie Goshima, su hogar está encantado, no por una persona, sino por un patrón: UZUMAKI, la espiral, el secreto hipnótico que da forma al mundo.\n\nUna obra hipnótica y mortal de Junji Ito, autor referencial en el manga seinen (adulto) de terror.","valoracion":0,"imagenes":[]},{"id":119,"titulo":"JANE EYRE CHARLOTTE BRONTE","situacion":"COMPLETADA","comentarios":"CLASICOS MANGA","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Adaptación al cómic/manga de la clásica obra de Charlotte Brontë.","valoracion":0,"imagenes":[]},{"id":120,"titulo":"JAPAN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"BURONSON/SHO FUMIMURA","dibujo":"KENTARO MIURA","autor":"","editorial":"PANINI MANGA","sinopsis":"Katsuji Yashima, un yakuza enamorado perdidamente a primera vista de la guapa reportera televisiva Yuka Katsuragi, decide seguir sus pasos, acompañado de su esbirro, hasta Barcelona. De repente, la tierra tiembla. Tras caer al fondo de un abismo, Yashima y sus acompañantes escuchan las profecías de una vieja inquietante, que afirma que el próspero y rico Japón va a desaparecer: correrá la misma suerte que la floreciente nación de Cartago, que fue arrasada hace siglos. Yashima, Yuka, el esbirro y cuatro adolescentes que estaban de viaje en el lugar expresan su incredulidad. La vieja, contrariada, los envía al mundo del futuro...","valoracion":0,"imagenes":[]},{"id":121,"titulo":"JESSICA JONES Nº6","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Número suelto centrado en la etapa adulta e investigadora del personaje.","valoracion":0,"imagenes":[]},{"id":122,"titulo":"JULIET","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 10","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"ROCK N COMICS","autor":"U-JIN","editorial":"Historias eróticas/románticas del autor U-Jin en formato recopilatorio.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":123,"titulo":"KAMIKAZE","situacion":"INCOMPLETA","comentarios":"SOLO SE EMITIERION 3 EN ESPAÑA","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"7","guion":"SATOSHI SHIKI","dibujo":"SATOSHI SHIKI","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":124,"titulo":"KAMIYADORI","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"5","tomos_jap":"5","guion":"KEI SANBE","dibujo":"KEI SAMBE","autor":"","editorial":"PLANETA COMIC","sinopsis":"Post-apocalipsis con virus que transforma a humanos; equipo militar vs mutaciones.","valoracion":0,"imagenes":[]},{"id":125,"titulo":"KENSHIN 27 Y 28","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":126,"titulo":"KIMAGURE ORANGE ROAD","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10","tomos_esp":"10","tomos_jap":"10","guion":"IZUMI MATSUMOTO","dibujo":"IZUMI MATSUMOTO","autor":"IZUMI MATSUMOTO","editorial":"GLENAT","sinopsis":"Kyosuke es un joven de carácter indeciso que el mismo día que se cambia de ciudad sale a pasear por su nuevo barrio y queda deslumbrado por Madoka. Las circunstancias le llevarán a salir con Hikaru, una amiga de Madoka. Sin embargo, no tardará en darse cuenta de que siempre está pensando en Madoka y hará lo posible por acercarse a ella. El triángulo amoroso está servido.","valoracion":0,"imagenes":[]},{"id":127,"titulo":"KOI KOI 7","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9","tomos_esp":"9","tomos_jap":"9","guion":"MORISHIGE","dibujo":"MORISHIGE","autor":"MORISHIGE","editorial":"IVREA","sinopsis":"Tanaka Tetsuro pensó que iba a estar tranquilo en su nuevo instituto. Lejos de su familia lo veía como un escape hacia la paz, pero no va a ser así. El problema es que no sabe que su nueva escuela esta llena de mujeres, de hecho él es el único hombre en ella. Ahora será constantemente acosado y quedará en el medio de una guerra entre estudiantes que para complicar aún más las cosas son dueñas de poderes increíbles.","valoracion":0,"imagenes":[]},{"id":128,"titulo":"KOWLOON GENERIC ROMANCE","situacion":"EN EMISIÓN","comentarios":"EN EMISION","tomos_tengo":"1-2-3-4-5-6-7-8-9","tomos_esp":"11","tomos_jap":"11","guion":"Jun Mayuzuki","dibujo":"Jun Mayuzuki","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Tras la muerte de su hermana, Natsuki decide adoptar a su sobrino Kenji y cuidar de él como madre soltera. Por otra parte, Yôsuke es un joven amable y solitario que ha vivido una dura infancia y que con el tiempo ha cortado lazos con todos sus familiares. Por azares del destino, estas dos almas perdidas acaban encontrándose y juntos cuidarán de Kenji como si fueran sus verdaderos padres. Sin embargo, justo cuando la vida parecía sonreírles, Natsuki fallece en un accidente de tráfico. Unos años más tarde, Kenji, que ya ha cumplido los veinte años, se encuentra con Yôsuke al visitar la tumba de su madre. ¿Qué habrá pasado entre ellos? Y, lo que es más importante, ¿serán capaces de resolver los problemas del pasado para avanzar hacia un nuevo futuro?","valoracion":0,"imagenes":[]},{"id":129,"titulo":"LA BIBLIA DE DRAGON BALL","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"AKIRA TORIYAMA","editorial":"DOLMEN EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":130,"titulo":"LA BIBLIA DE LOS NIÑOS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Edición infantil ilustrada de pasajes bíblicos.","valoracion":0,"imagenes":[]},{"id":131,"titulo":"LA EMPALAGOSA DIEGA DEL AMOR","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MIKA","dibujo":"MIKA","autor":"MIKA","editorial":"ODAIBA EDICIONES","sinopsis":"Mayu Sugino es uan oficinista rellenita a la que le encantan los dulces y que un buen día, comienz aun romance con su compañero de trabajo, Ryo Fujii, quien esconde un secreto sorprendente: es un goloso.\n\nLógicamente, ella quiere lucir tipazo en bikini en el retiro que la empresa tiene programado en la playa, por lo que Ryo le propone un plan de dieta de lo más peculiar: el sexercicio, que no es otra cosa que tener sexo a montones para quemar grasa. ¡¡¿Probará Mayu este sistema tan... estimulante?!!\n\n¡Empiezan con besos! ¡¡Luego se pone ella encima!! ¡¡¡Después él le hace el delicioso!!! El sexo le da placer pero... ¡¿habrá logrado su objetivo...?!","valoracion":0,"imagenes":[]},{"id":132,"titulo":"LA ESPADA DEL INMORTAL ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"30","tomos_esp":"30","tomos_jap":"30","guion":"","dibujo":"","autor":"HIROAKI SAMURA","editorial":"GLENAT","sinopsis":"Manji, samurái inmortal, en una epopeya de acción histórica; serie completa en 30 tomos.","valoracion":0,"imagenes":[]},{"id":133,"titulo":"LA ESPADA LEAL","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"GEORGE RR MARTIN","dibujo":"","autor":"","editorial":"DEBOLSILLO","sinopsis":"","valoracion":0,"imagenes":[]},{"id":134,"titulo":"LA MALDICION DE PRIMAVERA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"Asuka Konishi","dibujo":"Asuka Konishi","autor":"","editorial":"MILKY WAY","sinopsis":"El Gran Torneo de la Magia ha determinado que Fairy Tail es el gremio de magos más fuerte de Fiore. A los miembros de Fairy Tail, magníficos vencedores del torneo, les llega un breve descanso. Lucy, Elsa, Wendy y Lluvia se escabullen de la fiesta de clausura del torneo y se van juntas a visitar Crocus, la capital del reino. Pero allí, como era de esperar, se verán involucradas en un disturbio. ¡Y, después, ocurrirá algo muy grave que decidirá la suerte del reino!","valoracion":0,"imagenes":[]},{"id":135,"titulo":"LA PATRULLA X Nº10","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Número de la colección mutante dentro del evento editorial.","valoracion":0,"imagenes":[]},{"id":136,"titulo":"LA PATRULLA X: VÍSPERAS DE DESTRUCCIÓN","situacion":"COMPLETADA","comentarios":"COLECCIÓN EXTRA SUPERHÉROES","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"Extra recopilatorio de la Patrulla X con historias previas a un evento mayor.","autor":"CLAREMONT-LOBDELL-LAROCA-YU","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":137,"titulo":"LA POSADA DE LOS OBJETOS PERDIDOS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"","autor":"HOZUMI","editorial":"MILKY WAY","sinopsis":"Novela gráfica sobre una posada mágica donde aparecen objetos perdidos y sus secretos.","valoracion":0,"imagenes":[]},{"id":138,"titulo":"LA REINA DEMONIO NECESITA UN DESCANSO","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"MADOKA MIZUNO","dibujo":"","autor":"","editorial":"ODAIBA EDICIONES","sinopsis":"Spin-off cómico/relajado protagonizado por la 'reina demonio' y su día a día.","valoracion":0,"imagenes":[]},{"id":139,"titulo":"LA VISPERA DE LA BODA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"HOZUMI","dibujo":"HOZUMI","autor":"","editorial":"MILKY WAY","sinopsis":"Recopilación de seis historias cortas con tono melancólico y evocador.","valoracion":0,"imagenes":[]},{"id":140,"titulo":"LADY DEATH","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"7","tomos_esp":"16","tomos_jap":"16","guion":"","dibujo":"CHAOS COMIC","autor":"MIKE- JR-","editorial":"Colección de comics superheroicos; incompleta y no se va a completar.","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":141,"titulo":"LADY DEATH Nº (7)","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"CHAOS COMIC","sinopsis":"Lógicamente, ella quiere lucir tipazo en bikini en el retiro que la empresa tiene programado en la playa, por lo que Ryo le propone un plan de dieta de lo más peculiar: el sexercicio, que no es otra cosa que tener sexo a montones para quemar grasa. ¡¡¿Probará Mayu este sistema tan... estimulante?!!","valoracion":0,"imagenes":[]},{"id":142,"titulo":"LAS AVENTURAS DE LUCKY LUKE Nº4","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Número clásico de Lucky Luke con gags del Oeste.","valoracion":0,"imagenes":[]},{"id":143,"titulo":"LAS PERVERSIONES DE LA DOCTORA LIAM","situacion":"INCOMPLETA","comentarios":"5 no editado","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"5","guion":"MOTOKI TAKEUCHI","dibujo":"MOTOKI TAKEUCHI","autor":"MOTOKI TAKEUCHI","editorial":"IVREA","sinopsis":"Llega a tierras españolas el bizarrísimo manga de Motoki Takeuchi: Las Perversiones de la Dra. Liam. Esta supuesta doctora en realidad carece completamente de título médico (ni siquiera se sabe su verdadera identidad), pero eso no evitará que dedique sus días a \"tratar\" a cuanta persona se le cruce por delante con los métodos más \"alternativos\" que se hayan visto. Su mentor en esta cruzada por la mala praxis será Shisho, una esfera bigotuda parlante y pervertida que brota de la nuca de Liam (!?), y sostiene que el acoso sexual es vital para el funcionamiento de las sociedades modernas.\n\nAsí, esta pareja de terapeutas, junto a sus compañeros Naoto, Okazaki y Momiji, protagonizan este manga cargadísimo de humor de alto contenido sexual y situaciones guarras donde hasta hay una chica calentorra y un chico reprimido...","valoracion":0,"imagenes":[]},{"id":144,"titulo":"LECHE EXPLOSIVA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 2","tomos_esp":"2","tomos_jap":"2","guion":"","dibujo":"MANGA X/NORMA","autor":"ITOYOKO","editorial":"Tomo adulto de humor y erotismo del sello Manga X.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":145,"titulo":"LIFEX01","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"KABOSU","dibujo":"KABOSU","autor":"","editorial":"FANDOGAMIA","sinopsis":"¡Una segunda oportunidad de seguir viviendo!Ir a la escuela, jugar con sus amigos como todos los días... Esto es lo que Anna creía que iba a pasar, pero todo cambia cuando un camión se cruza con ella... Cuando despierta, se encuentra en un espacio entre la vida y la muerte. Allí conoce a Ru, un ángel perezoso que le guia en una academia donde sólo los elegidos pueden sobrevivir.","valoracion":0,"imagenes":[]},{"id":146,"titulo":"LINKS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"NATSUKI KIZU","dibujo":"NATSUKI KIZU","autor":"NATSUKI KIZU","editorial":"MILKY WAY EDICIONES","sinopsis":"Sekiya, locutor de radio, y Shibata, que trabaja en la cafetería a la que suele acudir; Kameda y Ogikawa, que se conocen en una fría noche y quedan unidos por un gato; Akiha, que no ha podido olvidar su primer amor, y Yahiko, su amante; y Nakajô y Sado, que llevan tiempo juntos, pero siempre andan discutiendo. Estas cuatro parejas deberán lidiar con sus sentimientos más profundos si quieren que sus relaciones no descarrilen.","valoracion":0,"imagenes":[]},{"id":147,"titulo":"LOBEZNO Nº9","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Historias de Wolverine en la línea de relanzamiento.","valoracion":0,"imagenes":[]},{"id":148,"titulo":"LOBEZNO: EL VIEJO LOGAN","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"Distopía violenta: un Logan envejecido debe sobrevivir en un mundo dominado por villanos.","autor":"MARK MILLAR - STEVE MCNIVEN","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":149,"titulo":"LOBEZNO: ORIGEN","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"Historias que exploran los primeros años y la mitología del personaje.","autor":"JEMAS - QUESADA - JENKINS - KUBERT - ISANOVE","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":150,"titulo":"LOS 4 FANTASTICOS Nº (1)","situacion":"INCOMPLETA","comentarios":"EXCELSION BIBLIOTECA MARVEL NO LA VOY A COMPLETAR","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"MARVEL COMICS","sinopsis":"Volumen 1 de Los 4 Fantásticos; no se completará (edición biblioteca).","valoracion":0,"imagenes":[]},{"id":151,"titulo":"LOS DIOSES MIENTEN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"KAORI OZAKI","dibujo":"KAORI OZAKI","autor":"","editorial":"MILKY WAY","sinopsis":"Corría el verano en que Natsuru tenía once años. Desde que rechazó a una compañera de clase el día de San Valentín, las chicas de su colegio no han vuelto a dirigirle la palabra, y decidieron desde entonces, ignorarle por completo. Pero justo antes de las vacaciones, todo cambia. Suzumura, la chica más alta de su clase, de repente, le habla. Ambos comenzarán un tierna relación de amistad, pero Natsuru pronto descubrirá que Suzumura esconde un terrible secreto.","valoracion":0,"imagenes":[]},{"id":152,"titulo":"LOS MEJORES CHISTES ERÓTICOS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"BIBLIOTECA DEL HUMOR","sinopsis":"Compilatorio de chistes para adultos con tono erótico y humorístico.","valoracion":0,"imagenes":[]},{"id":153,"titulo":"LOS NUEVOS VENGADORES 2: ¿QUIÉN ES EL VIGÍA?","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"BRIAN MICHAEL BENDIS","dibujo":"DAVID FINCH","autor":"BRIAN MICHAEL BENDIS","editorial":"MARVEL PANINI COMIC","sinopsis":"Misterio alrededor de un nuevo vigilante y conspiraciones a gran escala.","valoracion":0,"imagenes":[]},{"id":154,"titulo":"LOS NUEVOS VENGADORES 7: CONFIANZA","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"BRIAN M. BENDIS","dibujo":"LEINIL FRANCIS YU","autor":"BRIAN M. BENDIS","editorial":"MARVEL PANINI COMIC","sinopsis":"Tomo con un arco de conspiraciones y secretos alrededor del equipo.","valoracion":0,"imagenes":[]},{"id":155,"titulo":"LOS NUEVOS VENGADORES: FUGA","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"BRIAN MICHAEL BENDIS","dibujo":"DAVID FINCH","autor":"BRIAN MICHAEL BENDIS","editorial":"MARVEL PANINI COMIC","sinopsis":"Arco clásico de Bendis/Finch centrado en la formación y conflictos del equipo.","valoracion":0,"imagenes":[]},{"id":156,"titulo":"LOS ÚLTIMOS DOCTORES","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"3","tomos_jap":"3","guion":"Kyuu Hachikawa","dibujo":"","autor":"Kyuu Hachikawa","editorial":"KIBOOK EDICIONES","sinopsis":"Drama médico: choque de filosofías sobre la eutanasia y el final de la vida.","valoracion":0,"imagenes":[]},{"id":157,"titulo":"LOS VENGADORES Nº (1,15)","situacion":"INCOMPLETA","comentarios":"EXCELSION BIBLIOTECA MARVEL NO LA VOY A COMPLETAR","tomos_tengo":"1 Y 15","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"","autor":"","editorial":"MARVEL COMICS","sinopsis":"Edición de Los Vengadores incompleta en la colección de la biblioteca.","valoracion":0,"imagenes":[]},{"id":158,"titulo":"LOS VENGADORES Nº1 (RENACIMIENTO)","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Re-lanzamiento editorial con historias de los personajes más icónicos.","valoracion":0,"imagenes":[]},{"id":159,"titulo":"LOVE HINA ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14","tomos_esp":"14","tomos_jap":"14","guion":"KEN AKAMATSU","dibujo":"KEN AKAMATSU","autor":"KEN AKAMATSU","editorial":"GLENAT","sinopsis":"Sinopsis de Love Hina (Castellano)\nKeytarô es el único estudiante masculino en una residencia femenina, lo cual dará pie a las situaciones más hilarantes y alocadas. Pero una promesa entre dos niños tendrá consecuencias imprevisibles ahora que son adultos. Pura sitcom.","valoracion":0,"imagenes":[]},{"id":160,"titulo":"LOVE IN FOCUS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"Yôko Nogiri","dibujo":"Yôko Nogiri","autor":"","editorial":"DISTRITO MANGA","sinopsis":"Historia sobre una chica aficionada a la fotografía que descubre amor y talento.","valoracion":0,"imagenes":[]},{"id":161,"titulo":"LOVE JUNKIES","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-20-21","tomos_esp":"26","tomos_jap":"26","guion":"KYO HATSUKI","dibujo":"KYO HATSUKI","autor":"KYO HATSUKI","editorial":"NORMA EDITORIAL","sinopsis":"- Una provocación indebida para un cuerpo consentido","valoracion":0,"imagenes":[]},{"id":162,"titulo":"LOVENISTA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"KAYONO","dibujo":"KAYONO","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":163,"titulo":"MACBETH WILLIAM SHAKESPEARE","situacion":"COMPLETADA","comentarios":"CLASICOS MANGA","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Adaptación en formato cómic/manga de la tragedia de Shakespeare.","valoracion":0,"imagenes":[]},{"id":164,"titulo":"MAGIA & ACERO","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"15","tomos_esp":"20","tomos_jap":"20","guion":"","dibujo":"Serie de fantasía/aventura incompleta en la colección.","autor":"7 MONOS","editorial":"comic","sinopsis":"","valoracion":0,"imagenes":[]},{"id":165,"titulo":"MAGICAL PATISSIERE (duplicado)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"IVREA","autor":"TAISHI TSUTSUI","editorial":"(Ficha duplicada: misma obra listada previamente como MAGICAL PATISSIERE KOSAKI-CHAN).","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":166,"titulo":"MAGICAL PATISSIERE ROSAKI CHAN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"TAISHI TSUTSUI","dibujo":"TAISHI TSUTSUI","autor":"TAISHI TSUTSUI","editorial":"IVREA","sinopsis":"¡La hilarante historia de las páginas finales de Nisekoi, ahora cuenta con un manga aparte! Magical Patissier Kosaki-chan es una divertidísima parodia a las series de magical girls (con guiños a casi todas las series del género que seguramente ya conocéis) mezclada con la aparición de todos los personajes de Nisekoi.\nUn día, la enviada ratona del país mágico Rurin descubre un talento en Kosaki Onodera y la recluta como \"chica mágica\". Kosaki firma un contrato para así salvar a su amado senpai Ichijo, ¡¡pero no se dio cuenta de una terrible condición de que cada vez que se transformara estaría completamente desunda durante unos segundos!! ¡Luchando en el amor y en la magia, Onodera, Chitoge y Marika entran en acción, con mucha más sensualidad y fanservice que el Nisekoi original!","valoracion":0,"imagenes":[]},{"id":167,"titulo":"MAID TAI EL EQUIPO DE SIRVIENTAS DE HANAUKYO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14","tomos_esp":"14","tomos_jap":"","guion":"","dibujo":"","autor":"NORISHIGE","editorial":"MANGALINE","sinopsis":"","valoracion":0,"imagenes":[]},{"id":168,"titulo":"MALICIOUS CODE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"HANA YAKOU","dibujo":"MASAHIRO IKENO","autor":"","editorial":"IVREA","sinopsis":"Una mañana como siempre, Hiiro, el protagonista, mientras viajaba en el autobús escolar, repentinamente es atacado por una joven con los ojos rojos. Al despertar, Hiiro y otros tres compañeros se encuentran en Tokyo, la eterna capital abandonada que debería estar clausurada tras la pandemia del virus Aurora, años atrás. En Tokyo se han juntado jóvenes con habilidades especiales, y se ha establecido una nueva ley... Hiiro y sus amigos buscan determinar el porqué de todo esto y del “código malicioso” que está en sus cuerpos, antes de que lo destruya todo.","valoracion":0,"imagenes":[]},{"id":169,"titulo":"MANOS ENTRELAZADAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"Miho Obana","dibujo":"Miho Obana","autor":"","editorial":"PLANETA DEAGOSTINI","sinopsis":"Historia romántica/drama en formato tomo único o pequeńa serie.","valoracion":0,"imagenes":[]},{"id":170,"titulo":"MARMALADE BOY","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8","tomos_esp":"8","tomos_jap":"8","guion":"","dibujo":"","autor":"WATARU YOSHIZUMI","editorial":"PLANETA AGOSTINI","sinopsis":"Shojo clásico sobre familias entrelazadas y triángulos amorosos.","valoracion":0,"imagenes":[]},{"id":171,"titulo":"MARMALADE BOY LITTLE","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"7","tomos_jap":"7","guion":"","dibujo":"","autor":"WATARU YOSHIZUMI","editorial":"PLANETA COMIC","sinopsis":"Secuela/continuación ambientada 18 años después; edición incompleta.","valoracion":0,"imagenes":[]},{"id":172,"titulo":"MARVEL KNIGHTS Nº (1)","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Colección Marvel Knights, incompleta.","valoracion":0,"imagenes":[]},{"id":173,"titulo":"MASACRE Nº5","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Historias del irreverente antihéroe en la etapa de renacimiento.","valoracion":0,"imagenes":[]},{"id":174,"titulo":"MASACRE: CONTRA EL MASACRE MALVADO","situacion":"COMPLETADA","comentarios":"HEROES MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"DANIEL WAY","dibujo":"SALVA ESPÍN-JOHN MCCREA","autor":"DANIEL WAY","editorial":"MARVEL PANINI COMIC","sinopsis":"Arco humor/acción protagonizado por Deadpool con estilo frenético.","valoracion":0,"imagenes":[]},{"id":175,"titulo":"MEDIEVAL HITCHBLADE LOS AMOS DE LA OSCURIDAD","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"BRANDO - BATT","editorial":"IVREA","sinopsis":"- ¡¿Aceptarías ser mi primera vez?! (segunda parte)","valoracion":0,"imagenes":[]},{"id":176,"titulo":"MEJOR ASI","situacion":"EN EMISIÓN","comentarios":"EN EMISION","tomos_tengo":"1-2-3","tomos_esp":"10","tomos_jap":"10","guion":"SOURYU","dibujo":"SOURYU","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Serie en emisión sobre relaciones modernas y acuerdos no convencionales.","valoracion":0,"imagenes":[]},{"id":177,"titulo":"MI CHICA NUNCA ME SERIA INFIEL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"LUCIFER EDICIONES","sinopsis":"","valoracion":0,"imagenes":[]},{"id":178,"titulo":"MINDHUNTER","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":179,"titulo":"MINIFALDAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"4","tomos_jap":"4","guion":"CHATARO","dibujo":"","autor":"","editorial":"LA CUPULA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":180,"titulo":"MORTADELO (AÑO XVI - 1985 Nº214)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Número histórico de la serie con contenido de época.","valoracion":0,"imagenes":[]},{"id":181,"titulo":"MORTADELO Y FILEMÓN: 100 AÑOS DE CÓMIC","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Volumen conmemorativo y ensayos sobre la evolución del cómic.","valoracion":0,"imagenes":[]},{"id":182,"titulo":"MORTADELO Y FILEMÓN: 35 ANIVERSARIO (Nº77)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Edición especial conmemorativa de la serie y recopilación de mejores gags.","valoracion":0,"imagenes":[]},{"id":183,"titulo":"MORTADELO Y FILEMÓN: AGENTES A MOGOLLÓN (Nº108)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Historias de agentes con enredos y personajes estrafalarios.","valoracion":0,"imagenes":[]},{"id":184,"titulo":"MORTADELO Y FILEMÓN: CADA VIÑETA UN TROMPAZO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Tomo con gags visuales y viñetas destacadas.","valoracion":0,"imagenes":[]},{"id":185,"titulo":"MORTADELO Y FILEMÓN: DESPISTE INOPORTUNO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"COLECCIÓN OLE","sinopsis":"Aventura clásica incluida en la colección OLE.","valoracion":0,"imagenes":[]},{"id":186,"titulo":"MORTADELO Y FILEMÓN: EL ELIXIR DE LA VIDA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Tomo con inventos y problemas de laboratorio típicos de la serie.","valoracion":0,"imagenes":[]},{"id":187,"titulo":"MORTADELO Y FILEMÓN: EL OTRO YO DEL PROFESOR BACTERIO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Aventuras científicas con el profesor Bacterio como eje de los gags.","valoracion":0,"imagenes":[]},{"id":188,"titulo":"MORTADELO Y FILEMÓN: HAY UN TRAIDOR EN LA TÍA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Título clásico con una misión de espionaje y equívocos.","valoracion":0,"imagenes":[]},{"id":189,"titulo":"MORTADELO Y FILEMÓN: LA HISTORIA (Nº107)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Tomo especial con historia sobre el origen y aventuras históricas del dúo.","valoracion":0,"imagenes":[]},{"id":190,"titulo":"MORTADELO Y FILEMÓN: LOS INVASORES","situacion":"COMPLETADA","comentarios":"OLE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"OLE","sinopsis":"Aventuras de la dupla clásica en clave de humor absurdo y sátira social.","valoracion":0,"imagenes":[]},{"id":191,"titulo":"MORTADELO Y FILEMÓN: MASCOTAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"BRUGUERA","sinopsis":"Tomo temático centrado en animales y mascotas dentro de la saga.","valoracion":0,"imagenes":[]},{"id":192,"titulo":"MORTADELO Y FILEMÓN: MEJORES QUE JAMES BOND","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Parodia/aventura donde los protagonistas compiten con espías clásicos.","valoracion":0,"imagenes":[]},{"id":193,"titulo":"MORTADELO Y FILEMÓN: SAFARI CALLEJERO (Nº98)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Aventura cómica de los protagonistas en un safari urbano repleto de gags.","valoracion":0,"imagenes":[]},{"id":194,"titulo":"MORTADELO Y FILEMÓN: Y EL BOTONES SACARINO DOS LOCUELOS DE ATAR","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Historias con el personaje secundario Sacarino en el centro.","valoracion":0,"imagenes":[]},{"id":195,"titulo":"MUJINA INTO THE DEEP","situacion":"INCOMPLETA","comentarios":"EN EMISION","tomos_tengo":"1","tomos_esp":"3","tomos_jap":"4","guion":"Inio Asano","dibujo":"Inio Asano","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"En las bulliciosas calles de la gran metropolitana Tsukumo, una joven mercenaria aniquila con su catana a los objetivos que le encargan eliminar. Es una mujina, una persona sin derechos humanos que vive su día a día fuera de la ley. Es sanguinaria e implacable, y tiene un objetivo.","valoracion":0,"imagenes":[]},{"id":196,"titulo":"MY COSMIC MONSTER","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"","dibujo":"","autor":"","editorial":"ODAIBA EDICIONES","sinopsis":"Comedia romántica fantástica: chica y criatura transformada en chico.","valoracion":0,"imagenes":[]},{"id":197,"titulo":"MY HERO ACADEMIA VIGILANTE ILLEGAL","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"","autor":"","editorial":"PLANETA COMIC","sinopsis":"Spin-off ambientado en el universo de My Hero Academia centrado en vigilantes y justicia alternativa.","valoracion":0,"imagenes":[]},{"id":198,"titulo":"MY-HIME","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"5","tomos_jap":"5","guion":"Noboru Kimura","dibujo":"Kenetsu Satô","autor":"","editorial":"MANGALINE","sinopsis":"¡Orphan, el misterioso monstruo que ataca la escuela privada Fûka! ¡¡Comienza la batalla de las chicas con habilidad de materialización altamente avanzada (= Highly Advanced Materialising Equipment), las Hime, que protegen la escuela de la amenaza!!","valoracion":0,"imagenes":[]},{"id":199,"titulo":"NARUTO","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1-2-3-4-5-6-7","tomos_esp":"7","tomos_jap":"","guion":"","dibujo":"","autor":"MASASHI KISHIMOTO","editorial":"GLENAT","sinopsis":"- La treintañera a la que le regalaron un novio","valoracion":0,"imagenes":[]},{"id":200,"titulo":"NEGIMA MAGISTER NEGI MAGI","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1-2-3-4-5-6-8-9","tomos_esp":"38","tomos_jap":"38","guion":"","dibujo":"","autor":"KEN AKAMATSU","editorial":"GLENAT","sinopsis":"","valoracion":0,"imagenes":[]},{"id":201,"titulo":"NEN NE NO NE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"Shizuku Totono","dibujo":"Daisuke Hagiwara","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Una noche, en un momento de desesperación, Noel confiesa sus sentimientos por Elena a una total desconocida. Pero, cosas del destino, esta desconocida resulta ser una chica llamada June, la otra mejor amiga de Elena… ¡y rival de Noel en el amor! Y lo peor de todo es que ahora June sabe el secreto de Noel. Con todo en contra, ¿cómo podrá Noel conseguir a la chica de sus sueños?","valoracion":0,"imagenes":[]},{"id":202,"titulo":"NETSUZO TRAP","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"6","tomos_jap":"6","guion":"NAOKO KODAMA","dibujo":"NAOKO KODAMA","autor":"","editorial":"PLANETA COMIC","sinopsis":"Comedia romántica con malentendidos y situaciones subidas de tono entre adolescentes.","valoracion":0,"imagenes":[]},{"id":203,"titulo":"NINJA BOY","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"6","tomos_jap":"6","guion":"WARNER","dibujo":"GARZA","autor":"","editorial":"WORLD COMICS","sinopsis":"","valoracion":0,"imagenes":[]},{"id":204,"titulo":"NO PUEDO DECIRTE QUE TE QUIERO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"Fumi Mikami","dibujo":"Fumi Mikami","autor":"","editorial":"DISTRITO MANGA","sinopsis":"","valoracion":0,"imagenes":[]},{"id":205,"titulo":"NO TOQUES A MI CHICA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"Q-LA MINAMI","editorial":"PONENT MON","sinopsis":"","valoracion":0,"imagenes":[]},{"id":206,"titulo":"NOCHES OSCURAS METAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"SCOTT SNYDER","dibujo":"GRED CAPULLO","autor":"","editorial":"DC","sinopsis":"Antología/evento 'Dark Nights: Metal' en edición recopilada.","valoracion":0,"imagenes":[]},{"id":207,"titulo":"NON MORIAR","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"KATZIRINE","dibujo":"KATZIRINE","autor":"","editorial":"NOWEVOLUTION","sinopsis":"« Si un non moriar te visita con una carta, es una carta de muerte, los días que te quedan en la tierra de los vivos están fijados, pon tus asuntos en orden ».\n\nEl dios de la Muerte, Mors, envía a su non moriar Arawn a una misteriosa ciudad habitada por personas que, temerosas de morir, han conseguido vivir por siglos desafiando su autoridad.\n\nGuiado más por su curiosidad que por el deseo de cumplir sus órdenes, Arawn conocerá a la banshee que parece ser la clave de este suceso, la profetisa Aibhinn, conocida como Mariposa Negra.","valoracion":0,"imagenes":[]},{"id":208,"titulo":"NORITAKA Hakaiou Noritaka! (破壊王ノリタカ!)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18","tomos_esp":"18","tomos_jap":"18","guion":"Hideo Murata","dibujo":"Takashi Hamori","autor":"MURATA HAMORI","editorial":"GLENAT","sinopsis":"Serie extensa completada (18 tomos).","valoracion":0,"imagenes":[]},{"id":209,"titulo":"OGENKI CLINIC","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 18","tomos_esp":"18","tomos_jap":"18","guion":"","dibujo":"MANGA X/NORMA","autor":"HAKURA INUI","editorial":"Serie erótica-ligera: historias de la clínica Ogenki con tono humorístico y sexual.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":210,"titulo":"OH ROH","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"BURONSON/SHO FUMIMURA","dibujo":"KENTARO MIURA","autor":"","editorial":"PANINI MANGA","sinopsis":"Tomo único o pequeño volumen con inspiración de autores reconocidos.","valoracion":0,"imagenes":[]},{"id":211,"titulo":"OOKU: LOS APOSTENTOS PRIVADOS","situacion":"EN EMISIÓN","comentarios":"","tomos_tengo":"DEL 1 AL 2","tomos_esp":"10","tomos_jap":"19","guion":"","dibujo":"EDICIONES TOMODORO","autor":"FUMI YOSHINAGA","editorial":"Drama histórico-what-if: Japón matriarcal donde los roles de género están invertidos tras una plaga masculina.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":212,"titulo":"OREIMO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"4","tomos_jap":"4","guion":"TSUKASA FUSHIMI","dibujo":"SAKURA IKEDA","autor":"","editorial":"IVREA","sinopsis":"Kyosuke Kosaka es un chico de 17 años que se autodefine como «un estudiante de secundaria del montón». Kyosuke tiene una hermana de 14 años, Kirino, pero la relación entre ellos ha sido totalmente fría e inexistente durante los últimos años, básicamente porque ella –la típica chica popular que sirve como ejemplo para todas sus compañeras en la escuela: siempre sacando las mejores notas, destacando en los deportes y tan mona que trabaja como modelo a tiempo parcial– ha ignorado continuamente a su «poco interesante» hermano… y nada parece indicar que eso vaya a cambiar en ningún momento próximo.\n\nSin embargo, un día Kyosuke encuentra la caja de un DVD de un inocente anime de chicas mágicas… ¡¡pero al abrirlo lo que se encuentra dentro no es el disco de una historia de niñas monas que hacen truquitos de magia… sino el de un eroge (o videojuego erótico) llamado «Amor con mi hermanita»!! Tras llevar a cabo dicho hallazgo, las dudas asaltan a Kyosuke: ¿de quién será dicho videojuego? Pero Kyosuke encuentra la respuesta a tal pregunta más rápidamente de lo que cabría esperar: al entrar en su habitación, se encuentra a su hermanita buscando «algo» dentro de la misma y, tras un breve interrogatorio, Kirino acaba por confesar que es una otaku totalmente apasionada por las chicas moe y los videojuegos.\n\nA partir de aquí, y para evitar que el resto de la sociedad se entere de su peculiar hobby –especialmente su estricto padre chapado a la antigua–, Kirino le pide a Kyosuke que le dé consejos para conciliar su vida personal con su «pequeño secretito», lo que él acepta para, a su vez, intentar reconstruir su relación fraternal compartiendo los gustos de su hermanita, llegando incluso a acompañarla a un club otaku, donde conocerán a más gente con sus mismos gustos.","valoracion":0,"imagenes":[]},{"id":213,"titulo":"ORIGENES GREEN LANTERN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Volumen de orígenes de Green Lantern en edición recopilada.","valoracion":0,"imagenes":[]},{"id":214,"titulo":"OTAKU IN LOVE","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"","autor":"HIDENORI HARA","editorial":"GLENAT","sinopsis":"Novela romántica sobre un hombre tímido que se enamora en el tren.","valoracion":0,"imagenes":[]},{"id":215,"titulo":"PAINKILLER JANE - DARKCHYLDE (ONE SHOT)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"AUGUSTYN JONES","editorial":"PLANETA DAGOSTINI","sinopsis":"One-shot crossover entre Painkiller Jane y Darkchylde.","valoracion":0,"imagenes":[]},{"id":216,"titulo":"PAINKILLER JANE Nº (ZERO)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"QUESADA-PALMIOTTI-AUGUSTYN-CONNER","editorial":"PLANETA DAGOSTINI","sinopsis":"Número zero de la serie Painkiller Jane.","valoracion":0,"imagenes":[]},{"id":217,"titulo":"PAINKILLER JANE VS THE DARKNESS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"ENNIS-CONNER-PALMIOTTI","editorial":"PLANETA DAGOSTINI","sinopsis":"Crossover/comic único entre franquicias.","valoracion":0,"imagenes":[]},{"id":218,"titulo":"PANTERA NEGRA Nº2","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Historias tempranas del personaje dentro del relanzamiento.","valoracion":0,"imagenes":[]},{"id":219,"titulo":"PARA TI HIJO DE LA TIERRA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"Azusa Mase","dibujo":"Azusa Mase","autor":"Tow Ubukata","editorial":"MILKY WAY","sinopsis":"","valoracion":0,"imagenes":[]},{"id":220,"titulo":"PATRULLA X: ADVENIMIENTO","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS AUTORES","editorial":"MARVEL PANINI COMIC","sinopsis":"Recopilatorio de historias de la Patrulla X en el relanzamiento de la editorial.","valoracion":0,"imagenes":[]},{"id":221,"titulo":"PEACH! U-JIN LOVE COMEDY","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"SEINEN MANGA","editorial":"GLENAT","sinopsis":"Comedia erótica/romántica del autor U-Jin.","valoracion":0,"imagenes":[]},{"id":222,"titulo":"PEACH! U-JIN LOVE COMEDY JAPONES","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"","editorial":"OHZORA","sinopsis":"Edición japonesa/otra edición de Peach! incompleta o no a completar.","valoracion":0,"imagenes":[]},{"id":223,"titulo":"PELLIZCOS Nº (1,2,3,4,5,6,7)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"7","tomos_esp":"7","tomos_jap":"7","guion":"","dibujo":"","autor":"TOSHIKI YUI","editorial":"LA CUPULA","sinopsis":"Serie de tomos con historias de humor/romance.","valoracion":0,"imagenes":[]},{"id":224,"titulo":"PROFE INDISCRETO AMANTE SECRETO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"MEGUMI TODA","dibujo":"MEGUMI TODA","autor":"MEGUMI TODA","editorial":"IVREA","sinopsis":"Una estudiante ejemplar del prestigioso Instituto Ouka y su profe de química, Kouji Tachibana, mantienen una relación a escondidas de todo el mundo. Es muy difícil mantener un amor así, pero ¡no lo dejarían por nada del mundo! Disfrutad con las \"clases particulares\" de esta divertida parejita.","valoracion":0,"imagenes":[]},{"id":225,"titulo":"PUNISHER-PAINKILLER JANE","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Crossover incompleto; no se completará.","valoracion":0,"imagenes":[]},{"id":226,"titulo":"R-18 LOVE REPORT","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"","autor":"EMIKO SUGI","editorial":"IVREA","sinopsis":"Historias eróticas/adultas publicadas en formato recopilatorio.","valoracion":0,"imagenes":[]},{"id":227,"titulo":"RANMA 1/2","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18-19-20-21-22-23-24-25-26-27-28-29-30-31-32-33-34-35-36-37-38","tomos_esp":"38","tomos_jap":"38","guion":"RUMIKO TAKASHI","dibujo":"RUMIKO TAKASHI","autor":"RUMIKO TAKASHI","editorial":"GLENAT","sinopsis":"La obra cumbre de Takahashi por fin fue publicada íntegramente en su formato original. Desde que el pequeño Ranma y su padre cayeron en los manantiales chinos de Zhou Quan Xiang, al tocar el agua fría, el padre se transforma en panda, y Ranma en chica. ¡Una de las obras más divertidas y originales de la Historia de los comics!","valoracion":0,"imagenes":[]},{"id":228,"titulo":"REVISTA EL JUEVES (FEDERIK FREAK)","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"REVISTA JUEVES","sinopsis":"Número especial/revista (El Jueves).","valoracion":0,"imagenes":[]},{"id":229,"titulo":"REVISTA EL JUEVES (SEGURIDASOSIA)","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"REVISTA JUEVES","sinopsis":"Número/referencia suelta de la revista.","valoracion":0,"imagenes":[]},{"id":230,"titulo":"REVISTA EL JUEVES FEDERIK FREAK","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"REVISTA JUEVES","sinopsis":"","valoracion":0,"imagenes":[]},{"id":231,"titulo":"REVISTA EL JUEVES SEGURIDASOSIA","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"REVISTA JUEVES","sinopsis":"","valoracion":0,"imagenes":[]},{"id":232,"titulo":"REVOLTOSAS MINIFALDAS 2","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"4","tomos_jap":"4","guion":"CHATARO","dibujo":"","autor":"CHATARO","editorial":"LA CUPULA","sinopsis":"Segunda entrega de la serie 'Minifaldas' o similar.","valoracion":0,"imagenes":[]},{"id":233,"titulo":"RIPTIDE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"WORLD COMICS","sinopsis":"Tomo único o pequeño volumen de aventura/acción.","valoracion":0,"imagenes":[]},{"id":234,"titulo":"ROSEN GARTEN SAGA","situacion":"EN EMISIÓN","comentarios":"EN EMISION","tomos_tengo":"1-2","tomos_esp":"7","tomos_jap":"13","guion":"Fujisakimori","dibujo":"Bakotsu Tonooka","autor":"Fujisakimori","editorial":"LOCURA MANGALINEA","sinopsis":"Saga de fantasía en emisión con elementos oscuros y épicos.","valoracion":0,"imagenes":[]},{"id":235,"titulo":"RUROUNI KENSHIN Meiji Kenkaku Romantan- (るろうに剣心 -明治剣客浪漫譚-)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-76-17","tomos_esp":"28","tomos_jap":"28","guion":"NOBUHIRO WATSUKI","dibujo":"NOBUHIRO WATSUKI","autor":"NOBUHIRO WATSUKI","editorial":"GLENAT","sinopsis":"“Rurouni Kenshin” narra la historia de un samurái vagabundo de la época Meiji que intenta dejar atrás una carrera de asesino con la que se labró una terrible reputación. Para compensar en lo posible el daño causado, Kenshin pone su espada al servicio de los más débiles, una espada de filo invertido que le permite aplicar su poderosa y devastadora técnica de esgrima sin causar nuevas víctimas. A su alrededor pululan una serie de personajes inolvidables que irán pasando a formar parte de su vida. Todos ellos tienen un denominador común: son gente sin familia ni hogar.","valoracion":0,"imagenes":[]},{"id":236,"titulo":"Rurouni Kenshin -Meiji Kenkaku Romantan・Hokkaido-hen- (るろうに剣心 -明治剣客浪漫譚・北海道編-)","situacion":"EN EMISIÓN","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9","tomos_esp":"9","tomos_jap":"9","guion":"Kaoru Kurosaki, Nobuhiro Watsuki","dibujo":"Nobuhiro Watsuki","autor":"NOBUHIRO WATSUKI","editorial":"","sinopsis":"Continuación abierta de Rurouni Kenshin (Hokkaido-hen).","valoracion":0,"imagenes":[]},{"id":237,"titulo":"Rurouni Kenshin RESTAURACION (Tokuhitsuban)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 28","tomos_esp":"2","tomos_jap":"2","guion":"NOBUHIRO WATSUKI","dibujo":"NOBUHIRO WATSUKI","autor":"NOBUHIRO WATSUKI","editorial":"","sinopsis":"Edición especial/restaurada con tomos extra.","valoracion":0,"imagenes":[]},{"id":238,"titulo":"RYUGETSUSHI Bakumatsu Denki Roman (流月抄在线漫画)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"RYOICHI IKEGAMI","dibujo":"RYOICHI IKEGAMI","autor":"RYOICHI IKEGAMI","editorial":"CLENAT","sinopsis":"Tras varios trabajos que le lanzaron a la fama internacional en los años 80 y 90 (Santuario, Crying Freeman o Mai, la Chica con Poderes), vuelve a publicar en nuestro país uno de los mejores autores de su generación. Ryôichi Ikegami (1944) se nos presenta ahora como autor completo en una historia ambientada en el siglo XIX, en el que Japón sufrió cambios políticos y sociales profundos que provocaron la práctica desaparición de los shoguns o señores territoriales y sus samurais.","valoracion":0,"imagenes":[]},{"id":239,"titulo":"SAINT SEIYA (AZUL) COMPLETO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 83","tomos_esp":"83","tomos_jap":"83","guion":"","dibujo":"","autor":"MASAMI KURUMADA","editorial":"PLANETA AGOSTINI","sinopsis":"Edición completa/compilación de Saint Seiya (colección azul).","valoracion":0,"imagenes":[]},{"id":240,"titulo":"SAINT SEIYA (TOMO) LOS CABALLEROS DEL ZODIACO","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1-2-3-4-7-19-20-21-22-23-24-25-26-27-28","tomos_esp":"28","tomos_jap":"28","guion":"","dibujo":"","autor":"MASAMI KURUMADA","editorial":"GLENAT","sinopsis":"Edición de tomos incompleta; no se completará.","valoracion":0,"imagenes":[]},{"id":241,"titulo":"SAINT SEIYA EPISODIO G","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1-2-3-4-5-6-7","tomos_esp":"20","tomos_jap":"20","guion":"","dibujo":"","autor":"MASAMI KURUMADA/MEGUMU OKADA","editorial":"GLENAT","sinopsis":"Spin-off 'Episode G' incompleto en la colección.","valoracion":0,"imagenes":[]},{"id":242,"titulo":"SAMURAI DEEPER KYO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"38","tomos_esp":"38","tomos_jap":"38","guion":"KAMIJYO AKIMINE","dibujo":"KAMIJYO AKIMINE","autor":"KAMIJYO AKIMINE","editorial":"GLENAT","sinopsis":"Cuatro años después de la Batalla de Sekigahara, renace la leyenda del asesino de mil hombres. Posee una gran katana de cinco shaku, tiene el símbolo del tai-chi en la espalda y ojos carmesíes como los de un ogro. Su cabeza vale un millón de ryo, y su nombre es Kyo Ojos de Ogro.","valoracion":0,"imagenes":[]},{"id":243,"titulo":"SERAPHIC FEATHER MAS ALLA DEL UNIVERSO","situacion":"INCOMPLETA","comentarios":"SERIE CANCELADA EN ESPAÑA CON 3 TOMOS","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"11","guion":"TOSHIYA TAKEDA, YO MORIMOTO","dibujo":"HIROYUKI UTATANE","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Serie interrumpida en España; fantasía/aventura con temática sobrenatural.","valoracion":0,"imagenes":[]},{"id":244,"titulo":"SERGIO ARAGONES MASACA MARVEL Y DESTRUYE DC","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"SERGIO ARAGONES","editorial":"PLANETA DAGOSTINI","sinopsis":"Colección de humor/chistes y parodias de Sergio Aragonés sobre cómics.","valoracion":0,"imagenes":[]},{"id":245,"titulo":"SEXY COSPLAY DOLL","situacion":"EN EMISIÓN","comentarios":"","tomos_tengo":"DEL 1 AL 14","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"PANINI MANGA","autor":"SHINICHI FUKUDA","editorial":"Comedia/romance centrada en el cosplay y la relación entre cosplayer y su compañero.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":246,"titulo":"SEXY GUARDIAN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2","tomos_esp":"2","tomos_jap":"2","guion":"Mayu Shinjo","dibujo":"Mayu Shinjo","autor":"Mayu Shinjo","editorial":"IVREA","sinopsis":"Tomo corto de comedia romántica/adulta del autor Mayu Shinjo.","valoracion":0,"imagenes":[]},{"id":247,"titulo":"SHADOW LADY (edición)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"NORMA EDITORIAL","autor":"MASAKAZU KATSURA","editorial":"Aventuras de una joven que se convierte en una heroína nocturna con poderes especiales.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":248,"titulo":"SHINSENGUMI IMON PEACE MAKER","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"5","tomos_jap":"5","guion":"NANAE CHRONO","dibujo":"NANAE CHRONO","autor":"NANAE CHRONO","editorial":"IVREA","sinopsis":"Historias históricas/accion centradas en el Shinsengumi.","valoracion":0,"imagenes":[]},{"id":249,"titulo":"SHONEN NOTE Days of Evanescence","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8","tomos_esp":"8","tomos_jap":"8","guion":"Yuhki Kamatani","dibujo":"Yuhki Kamatani","autor":"","editorial":"TOMODOMO","sinopsis":"Una obra sinestésica sobre el cambio y la búsqueda de la propia identidad, que fusiona sonido y dibujo con un resultado sorprendente.","valoracion":0,"imagenes":[]},{"id":250,"titulo":"SIRIUS TWIN STARS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"ANA C. SANCHEZ","dibujo":"ANA C. SANCHEZ","autor":"ANA C. SANCHEZ","editorial":"PLANETA COMIC","sinopsis":"\"El prometedor futuro como deportista de élite de Dani se trunca cuando, durante en plena competición retransmitida por televisión, su corazón colapsa. Esta dura experiencia no solo afectará a su salud, sino que también destruirá la relación con su madre y lapidará su carrera como tenista. Con el objetivo de alejarse del ajetreo de la gran ciudad y de todos sus problemas, decidirá ir con su primo a un pequeño pueblo costero del Levante y es allí donde conocerá a Blanca, una chica llena de vitalidad y enamorada de la astronomía que le recordará que la vida puede ser hermosa y que Dani puede brillar nuevamente como lo hacen las estrellas.","valoracion":0,"imagenes":[]},{"id":251,"titulo":"SLAM DUNK ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 31","tomos_esp":"31","tomos_jap":"31","guion":"","dibujo":"","autor":"TAKEHIKO INOUE","editorial":"IVREA","sinopsis":"Manga deportivo de baloncesto, clásico y muy popular en España.","valoracion":0,"imagenes":[]},{"id":252,"titulo":"SPIDER GWEN UN GRAN PODER","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"JASON LATOUR","dibujo":"ROBBI RODRIGUEZ","autor":"JASON LATOUR","editorial":"MARVEL","sinopsis":"Historia alternativa centrada en Gwen Stacy como heroína.","valoracion":0,"imagenes":[]},{"id":253,"titulo":"SPIDERMAN Nº8","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Número representativo de la línea de Spidey en la época.","valoracion":0,"imagenes":[]},{"id":254,"titulo":"SPIDERMAN NOIR","situacion":"COMPLETADA","comentarios":"COLECCIÓN COMPLETA","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL","dibujo":"Versión pulp/noir de Spider-Man ambientada en una época de sombras y corrupción.","autor":"HINE - SAPOLSKY - DI GIANDOMENICO","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":255,"titulo":"SPIDERMAN: EL OTRO","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"DAVID STRACZYNSKI","dibujo":"PAQUETES DE AUTORES","autor":"DAVID STRACZYNSKI","editorial":"MARVEL PANINI COMIC","sinopsis":"Arco donde Peter Parker afronta cambios físicos y místicos que ponen en riesgo su identidad.","valoracion":0,"imagenes":[]},{"id":256,"titulo":"SPIDERMAN: ENTRE LOS MUERTOS (MUST-HAVE)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"TERRY DOOZON-FRANK CHO","dibujo":"MARVEL","autor":"MARK MILLAR","editorial":"Arco especial recopilado como must-have con autores destacados.","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":257,"titulo":"SPIDERMAN: LA NOCHE DEL LAGARTO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Historia puntual de Spider-Man con trama noir.","valoracion":0,"imagenes":[]},{"id":258,"titulo":"SPIDERWOMAN Nº (1,2,3","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1-2-3","tomos_esp":"18","tomos_jap":"18","guion":"BYRNE","dibujo":"SEARS","autor":"BYRNE","editorial":"MARVEL COMIC","sinopsis":"Colección de Spiderwoman incompleta y con intención de no completar.","valoracion":0,"imagenes":[]},{"id":259,"titulo":"SPIRIT OF THE TAO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"2014-01-01 00:00:00","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"","autor":"D-TRON,TAX","editorial":"PLANETA AGOSTINI","sinopsis":"Serie de fantasía/aventura con múltiples tomos recopilados.","valoracion":0,"imagenes":[]},{"id":260,"titulo":"SPIRIT OF THE TAO Nº ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15","tomos_esp":"15","tomos_jap":"","guion":"D-TRON,TAX","dibujo":"","autor":"","editorial":"PLANETA AGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":261,"titulo":"SPY BOY Nº (1 Y 2)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 1","tomos_esp":"2","tomos_jap":"2","guion":"PETER DAVID","dibujo":"POP MHAN","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Serie de espionaje juvenil en formato tomo corto.","valoracion":0,"imagenes":[]},{"id":262,"titulo":"STEINS GATE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"","guion":"YONI SARACHI","dibujo":"5PH/NITRO PLUS","autor":"","editorial":"","sinopsis":"Adaptación del videojuego: viajes en el tiempo, SERN y consecuencias temporales.","valoracion":0,"imagenes":[]},{"id":263,"titulo":"STEINS GATE ZERO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6","tomos_esp":"6","tomos_jap":"6","guion":"TAKA HIMENO","dibujo":"MAGES/CHIYO ST INC","autor":"","editorial":"IVRA","sinopsis":"Secuela/variante de Steins;Gate centrada en líneas temporales alternativas.","valoracion":0,"imagenes":[]},{"id":264,"titulo":"SUBARU","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11","tomos_esp":"11","tomos_jap":"11","guion":"Masahito Soda","dibujo":"Masahito Soda","autor":"Masahito Soda","editorial":"EDT EDITORES DE TEBEOS","sinopsis":"Historia deportiva/demográfica del protagonista (tomo de clásico shonen/seinen).","valoracion":0,"imagenes":[]},{"id":265,"titulo":"SUEÑOS","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2-4-6-8-9-10-17","tomos_esp":"17","tomos_jap":"17","guion":"Colección con números sueltos; título incompleto en la colección del usuario.","dibujo":"manga","autor":"GLENAT","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":266,"titulo":"SUEÑOS / PRIMEROS SUEÑOS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"EDT","autor":"RAFAEL SOUSA / JAVIER SÁNCHEZ","editorial":"Colección de relatos ilustrados sobre ensoñaciones y primeros sueños.","sinopsis":"book","valoracion":0,"imagenes":[]},{"id":267,"titulo":"SUPER HUMOR: MORTADELO Y FILEMÓN (antología)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Colección de historias breves y especiales para el público infantil/adulto.","valoracion":0,"imagenes":[]},{"id":268,"titulo":"SUPERMAN VERSUS TERMINATOR MUERTE EN EL FUTURO Nº (1 Y 2)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 1","tomos_esp":"2","tomos_jap":"2","guion":"","dibujo":"","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Crossover entre Superman y Terminator en edición recopilada.","valoracion":0,"imagenes":[]},{"id":269,"titulo":"SUPERMAN Y LOS 4 FANTÁSTICOS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Crossover entre iconos del cómic recopilado.","valoracion":0,"imagenes":[]},{"id":270,"titulo":"SUPERMAN: LAS HISTORIAS DE ALAN MOORE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"ALAN MOORE","dibujo":"","autor":"","editorial":"","sinopsis":"Recopilatorio de relatos/cuentos de Alan Moore sobre Superman.","valoracion":0,"imagenes":[]},{"id":271,"titulo":"TACHIBANA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"YUJI SHIOZAKI","dibujo":"YUJI SHIOZAKI","autor":"","editorial":"IVREA","sinopsis":"¡Tragedia a la luz del día! Todo cambia en la familia Tachibara cuando el padre se presenta una mañana acompañado de la joven y atractiva Oobu. A partir de ese momento, Shigeru Tachibara (18 años) y su nueva madrastra (20 años) quedan prendados. ¡Una batalla diaria entre el deseo y la razón! Nikkan Tachibana es otra creación de Yuji Shiozaki, el mismísimo autor de Battle Club e Ikkitousen.","valoracion":0,"imagenes":[]},{"id":272,"titulo":"TALES OF SYMPHONIA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3-4-5 + EXTRA","tomos_esp":"5","tomos_jap":"5","guion":"HITOSHI ICHIMURA","dibujo":"","autor":"HITOSHI ICHIMURA","editorial":"PLANETA","sinopsis":"Adaptación del popular videojuego con elementos de aventura y fantasía.","valoracion":0,"imagenes":[]},{"id":273,"titulo":"TALES OF THE WITCHBLADE Nº (1,2,3","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Edición recopilada de la serie Witchblade en tomos limitados.","valoracion":0,"imagenes":[]},{"id":274,"titulo":"TESIS DE NANCY","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"","tomos_jap":"","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":275,"titulo":"THE DARKNESS Nº (","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 26","tomos_esp":"26","tomos_jap":"26","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Colección completa de la serie 'The Darkness'.","valoracion":0,"imagenes":[]},{"id":276,"titulo":"THE HORIZON","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"3","tomos_jap":"3","guion":"Jung Ji Hun","dibujo":"Jung Ji Hun","autor":"","editorial":"KIBOOK","sinopsis":"Un mundo donde todo se ha perdido. Un chico y una chica, juntos y solos. Un destello de esperanza se atisba en el lejano horizonte. Todo lo que pueden hacer es seguir adelante. Sin embargo, rodeados de adultos corruptos y una devastadora desesperación... ¿Cuánto más van a poder seguir avanzando? Averígualo en esta conmovedora aventura de Jung Ji Hun, el aclamado autor coreano de ‘The Boxer’.","valoracion":0,"imagenes":[]},{"id":277,"titulo":"THE MAGDALENA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Tomo de la serie 'The Magdalena' en edición recopilada.","valoracion":0,"imagenes":[]},{"id":278,"titulo":"THE PRINCE OF TENNIS","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-16","tomos_esp":"42","tomos_jap":"42","guion":"","dibujo":"","autor":"TAKESHI KONOMI","editorial":"CLENAT","sinopsis":"Gran serie deportiva (tenis) incompleta en la colección del usuario; no se completará.","valoracion":0,"imagenes":[]},{"id":279,"titulo":"THE ULTIMATES: SUPERHUMANOS","situacion":"COMPLETADA","comentarios":"MARVEL DELUXE","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"MARVEL PANINI COMIC","dibujo":"Reimaginación moderna de los superhéroes Ultimates en clave épica y cinematográfica.","autor":"MARK MILLAR - BRYAN HITCH","editorial":"comic","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":280,"titulo":"TODO MORTADELO Y FILEMÓN (recop.)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"F. IBAÑÉZ","dibujo":"","autor":"F. IBAÑÉZ","editorial":"","sinopsis":"Recopilatorio/colección diversa de historias clásicas de Mortadelo y Filemón.","valoracion":0,"imagenes":[]},{"id":281,"titulo":"TOMB RAIDER","situacion":"SIN DATOS","comentarios":"","tomos_tengo":"","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"","valoracion":0,"imagenes":[]},{"id":282,"titulo":"TOMB RAIDER - WITCHBLADE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Crossover/one-shot entre Tomb Raider y Witchblade.","valoracion":0,"imagenes":[]},{"id":283,"titulo":"TOMB RAIDER (LA MASCARA DE LA MEDUSA)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Historia autoconclusiva de Tomb Raider.","valoracion":0,"imagenes":[]},{"id":284,"titulo":"TOMB RAIDER: LARA CROFT ESTA AQUÍ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 10","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"","autor":"JD SMITH","editorial":"PLANETA DAGOSTINI","sinopsis":"Colección de aventuras de Tomb Raider en edición recopilada.","valoracion":0,"imagenes":[]},{"id":285,"titulo":"TOMB RAIDER: NUEVAS AVENTURAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 10","tomos_esp":"10","tomos_jap":"10","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Recopilación de nuevas aventuras de la franquicia Tomb Raider.","valoracion":0,"imagenes":[]},{"id":286,"titulo":"TRIGUN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 7","tomos_esp":"7","tomos_jap":"7","guion":"","dibujo":"","autor":"YASUHIRO NIGHTOW","editorial":"NORMA EDITORIAL","sinopsis":"Manga de acción/ciencia-ficción con toques cómicos y dramáticos.","valoracion":0,"imagenes":[]},{"id":287,"titulo":"TSUBASA  RESERVOIR CHRONICLE","situacion":"INCOMPLETA","comentarios":"NO LA VOY A COMPLETAR","tomos_tengo":"DEL 1 AL 2","tomos_esp":"28","tomos_jap":"28","guion":"","dibujo":"","autor":"CLAMP","editorial":"NORMA EDITORIAL","sinopsis":"Serie larga de CLAMP, incompleta en la colección actual.","valoracion":0,"imagenes":[]},{"id":288,"titulo":"TSUNAMI GRAPHIX","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"3","tomos_jap":"3","guion":"","dibujo":"TSUNAMI COMICS","autor":"","editorial":"Revista/antología de cómic independiente con historias variadas.","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":289,"titulo":"TU BRILLO EN LAS NOCHES DE LUNA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"TETSUYA SANO","dibujo":"DAICHI MATSUSE","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"","valoracion":0,"imagenes":[]},{"id":290,"titulo":"TU BRILLO EN LAS NOCHES DE LUNA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"DAICHI MATSUSE","dibujo":"","autor":"TETSUYA SANO","editorial":"NORMA EDITORIAL","sinopsis":"Tierno drama romántico sobre una lista de deseos antes de morir.","valoracion":0,"imagenes":[]},{"id":291,"titulo":"ULTIMATE SPIDERMAN","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12","tomos_esp":"20","tomos_jap":"20","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL COMICS","sinopsis":"Colección Ultimate Spider-Man incompleta según captura.","valoracion":0,"imagenes":[]},{"id":292,"titulo":"ULTIMATE X-MEN","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2-3-4-5","tomos_esp":"15","tomos_jap":"15","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL COMICS","sinopsis":"Serie Ultimate incompleta en la colección del usuario.","valoracion":0,"imagenes":[]},{"id":293,"titulo":"UNIVERSO X (Nº 1-2)","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"DEL 1 AL 2","tomos_esp":"2","tomos_jap":"2","guion":"","dibujo":"","autor":"MARVEL COMICS","editorial":"Colección Universo X incompleta (edición Marvel).","sinopsis":"comic","valoracion":0,"imagenes":[]},{"id":294,"titulo":"UZUMAKI","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"JUNJI ITO","editorial":"PLANETA COMIC","sinopsis":"Terror cósmico: un pueblo obsesionado por las espirales sucumbe a sucesos cada vez más grotescos.","valoracion":0,"imagenes":[]},{"id":295,"titulo":"VAMPIRE MASTER DARK CRIMSON","situacion":"INCOMPLETA","comentarios":"2Y3 NO EDITADOS EN ESPAÑA","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"3","guion":"MIE TAKASE","dibujo":"SATOSHI URUSHIHARA","autor":"SATOSHI URUSHIHARA","editorial":"SELECTAVISION","sinopsis":"Con la llegada del nuevo siglo, una espesa capa de niebla empezó a aparecer a lo largo y ancho del mundo. Tan espesa era que dificultaba la llegada de los rayos del sol. Se trataba de una niebla que cambió el destino de la humanidad para siempre. Desde entonces, se sucedieron los más extraños fenómenos y desapariciones sin que nadie pudiera encontrar una explicación lógica. Muchas personas intentaron poner fin a estos sucesos, aunque con escasos resultados.","valoracion":0,"imagenes":[]},{"id":296,"titulo":"VAMPIRE MASTER: DARK CRIMSON","situacion":"INCOMPLETA","comentarios":"ESPAÑA NO TERMINA EDICION","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"3","guion":"MIE TAKASE","dibujo":"SATOSHI URUSHIHARA","autor":"SATOSHI URUSHIHARA","editorial":"SELECTAVISION","sinopsis":"Edición española incompleta: faltan tomos 2 y 3; edición japonesa tiene más volúmenes.","valoracion":0,"imagenes":[]},{"id":297,"titulo":"VANILA ESSENCE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"YAMATOGAWA","editorial":"EDICIONES BABYLON","sinopsis":"Tomo único/serie corta de romance/erótico ligero.","valoracion":0,"imagenes":[]},{"id":298,"titulo":"VIDEO GIRL AI","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 15","tomos_esp":"15","tomos_jap":"15","guion":"MASAKAZU KATSURA","dibujo":"MASAKAZU KATSURA","autor":"MASAKAZU KATSURA","editorial":"PLANETA AGOSTINI","sinopsis":"Yota Moliga es un chico sencillo, enamorado de una compañera de clase, Moemi. El problema es que Moemi está enamorada de Takashi, el mejor amigo de Takashi, el mejor amigo de Yota. Pero Yota encuentra, sin desearlo, a otra chica... Un buen día, paseando por el barrio, entra en un vídeo club y alquila una película. Cuando pone la cinta en su aparato reproductor, ocurre algo extraordinario... ¡¡La chica de la película salta de la pantalla a la vida real!!","valoracion":0,"imagenes":[]},{"id":299,"titulo":"VINLAND SAGA","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1-2-3","tomos_esp":"28","tomos_jap":"28","guion":"","dibujo":"","autor":"","editorial":"PLANETA COMIC","sinopsis":"Saga épica vikinga: colección no completada en la estantería del usuario.","valoracion":0,"imagenes":[]},{"id":300,"titulo":"VIRGIN DOLLS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 4","tomos_esp":"4","tomos_jap":"4","guion":"","dibujo":"MANGA X/NORMA","autor":"WATARU WATANABE","editorial":"Colección de historias con tono ecchi/romántico del autor Wataru Watanabe.","sinopsis":"manga","valoracion":0,"imagenes":[]},{"id":301,"titulo":"VISIONARY U-JIN: 17 HISTORIAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 17","tomos_esp":"17","tomos_jap":"17","guion":"U-JIN","dibujo":"","autor":"","editorial":"NORMA EDITORIAL","sinopsis":"Antología de 17 historias del autor U-Jin.","valoracion":0,"imagenes":[]},{"id":302,"titulo":"VIUDA NEGRA (volúmenes)","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"GRAYSON JONES","editorial":"MARVEL SNICARRS FORUM","sinopsis":"Volumen/es de Viuda Negra sin completar en la colección.","valoracion":0,"imagenes":[]},{"id":303,"titulo":"VIUDA NEGRA Nº1","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Primer número dedicado a la espía Natasha Romanoff.","valoracion":0,"imagenes":[]},{"id":304,"titulo":"VIUDA NEGRA Nº3","situacion":"COMPLETADA","comentarios":"EL RENACIMIENTO DE MARVEL","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"VARIOS","editorial":"MARVEL LOS AÑOS 2000","sinopsis":"Recopilación de misiones de Natasha Romanoff en la era del Renacimiento Marvel.","valoracion":0,"imagenes":[]},{"id":305,"titulo":"WADATSUMI","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 2","tomos_esp":"2","tomos_jap":"2","guion":"YUMISUKE KOTOYOSHI","dibujo":"YUMISUKE KOTOYOSHI","autor":"YUMISUKE KOTOYOSHI","editorial":"NORMA EDITORIAL","sinopsis":"Hace tiempo se produjo en el mundo un desastre colosal: el gran hundimiento. Debido a los estragos que causó, la civilización se desintegró... La muerte visitó tanto a los que deseaban seguir con vida como a los que se resignaban a perderla. El aspecto que el mundo había tenido hasta entonces cambió completamente. Se convirtió en un mundo fosforescente a la deriva, compuesto sólo de mar...","valoracion":0,"imagenes":[]},{"id":306,"titulo":"WARLANDS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 12","tomos_esp":"12","tomos_jap":"12","guion":"","dibujo":"","autor":"","editorial":"PLANETA DAGOSTINI","sinopsis":"Serie de fantasía épica recopilada en varios tomos.","valoracion":0,"imagenes":[]},{"id":307,"titulo":"WHITCHBLADE (colección)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 25","tomos_esp":"25","tomos_jap":"25","guion":"","dibujo":"","autor":"","editorial":"PLANETA AGOSTINI","sinopsis":"Colección completa de Witchblade en la edición del usuario.","valoracion":0,"imagenes":[]},{"id":308,"titulo":"WORLD WAR HULK INTEGRAL","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"","tomos_esp":"1","tomos_jap":"1","guion":"PAK","dibujo":"ROMITA JR","autor":"","editorial":"PANINI COMIC","sinopsis":"Integral del evento 'World War Hulk' en edición recopilada.","valoracion":0,"imagenes":[]},{"id":309,"titulo":"X-CLAMP","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"DEL 1 AL 11 Y EL 18","tomos_esp":"24","tomos_jap":"24","guion":"","dibujo":"","autor":"CLAMP","editorial":"PLANETA AGOSTINI","sinopsis":"Colección X-CLAMP con volúmenes dispersos; incompleta.","valoracion":0,"imagenes":[]},{"id":310,"titulo":"X-MEN 2099 (MUERTE EN LAS VEGAS)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"JOHN F MOORE - RON LIM","editorial":"FORUM","sinopsis":"Número especial de X-Men 2099 en edición recopilada.","valoracion":0,"imagenes":[]},{"id":311,"titulo":"XTREME X-MEN","situacion":"INCOMPLETA","comentarios":"","tomos_tengo":"1","tomos_esp":"20","tomos_jap":"20","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"","valoracion":0,"imagenes":[]},{"id":312,"titulo":"Y SIN EMBARGO TE QUIERO","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 7","tomos_esp":"7","tomos_jap":"7","guion":"MAG HSU","dibujo":"NAO EMOTO","autor":"","editorial":"PLANETA COMIC","sinopsis":"Serizawa trabaja en una asesoría jurídica. Un día, al volver a casa, se cruza con una chica que le suena...La conoce, pero no logra recordar de qué. Así pues, en busca de la identidad del encuentro que le ha deparado el destino, Serizawa empieza a rememorar sus amores pasados...","valoracion":0,"imagenes":[]},{"id":313,"titulo":"YO SOY PANTERA NEGRA","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"STAN LEE","dibujo":"JACK KIRBY","autor":"","editorial":"MARVEL","sinopsis":"Edición clásica del personaje Pantera Negra / Black Panther.","valoracion":0,"imagenes":[]},{"id":314,"titulo":"YOUR NAME (KIMI NO NA WA)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 3","tomos_esp":"3","tomos_jap":"3","guion":"MAKOTO SHINKAI","dibujo":"RANMARU KOTONE","autor":"","editorial":"PLANETA COMIC","sinopsis":"Adaptación al manga de la famosa película sobre cuerpos que se intercambian.","valoracion":0,"imagenes":[]},{"id":315,"titulo":"YOURE MY SUN","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"Yuki Fumino / Yuki Akaneda","dibujo":"Yuki Fumino / Yuki Akaneda","autor":"","editorial":"DISTRITO MANGA","sinopsis":"Yuki Akaneda regresa con una obra enternecedora en la que dos almas perdidas con un pasado triste tratarán de reconstruir una nueva vida juntos.","valoracion":0,"imagenes":[]},{"id":316,"titulo":"YOUTUBERS IN LOVE","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"Asami Hanamoto","dibujo":"Asami Hanamoto","autor":"","editorial":"IVREA","sinopsis":"Ella es Mina, una youtuber experta en maquillaje que se enorgullece de su enorme sentido estético e insiste con que la apariencia es todo, aunque esconde un gran corazón a espaldas de sus millares de seguidores. Él es Yuugo, un youtuber desaliñado experto en videojuegos con menos carisma que una ostra y menos seguidores que tu abuela en Instagram.","valoracion":0,"imagenes":[]},{"id":317,"titulo":"YURA Y MAKOTO  Futari Ecchi","situacion":"INCOMPLETA","comentarios":"ESPAÑA SOLO 28","tomos_tengo":"1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16-17-18-19-20-21-22-23-24-25","tomos_esp":"28","tomos_jap":"92 TOMOS  ABIERTA","guion":"KATSU AKI","dibujo":"KATSU AKI","autor":"KATSU AKI","editorial":"FUTARI HETCHI","sinopsis":"Serie larga de educación sexual y comedia erótica; edición española parcial.","valoracion":0,"imagenes":[]},{"id":318,"titulo":"YURA Y MAKOTO PARA CHICAS","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 2","tomos_esp":"2","tomos_jap":"2","guion":"KATSU AKI","dibujo":"KATSU AKI","autor":"","editorial":"MANGALINE","sinopsis":"Makoto Onoda y Yura son una encantadora pareja que se conocieron a través de una agencia matrimonial. Hace poco que se han casado y son muy felices. Su amor se hace más profundo a medida que aprenden acerca del sexo. Bueno, ¿Qué ocurrirá hoy?\n\n¿Eres mujer y tienes dudas sobre sexo?\n¡El popular manual de sexo Yura y Makoto llega centrado en las mujeres!","valoracion":0,"imagenes":[]},{"id":319,"titulo":"YUZU BUNKO CLUB","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"DEL 1 AL 4","tomos_esp":"4","tomos_jap":"4","guion":"MASATO","dibujo":"","autor":"MASATOSHI","editorial":"IVREA","sinopsis":"Comedia erótica: Yuzu, escritora de novelas eróticas, y su convivencia con su novio Makoto.","valoracion":0,"imagenes":[]},{"id":320,"titulo":"ZIPI Y ZAPE (colección)","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Historietas clásicas de la pareja de cómic española.","valoracion":0,"imagenes":[]},{"id":321,"titulo":"ZIPI Y ZAPE Y CARPANTA: EL TERROR DEL MÁS ALLÁ","situacion":"COMPLETADA","comentarios":"","tomos_tengo":"1","tomos_esp":"1","tomos_jap":"1","guion":"","dibujo":"","autor":"","editorial":"","sinopsis":"Historia humorística con elementos fantásticos.","valoracion":0,"imagenes":[]}];
+
+// ══════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════
+const A = {
+  uid: null, profile: null, name: null,
+  books: [], filter: 'ALL', sort: 'az', view: 'g',
+  page: 1, pageSize: 40,
+  editId: null, rating: 0, imgs: [],
+  gh: false, lastSaved: null, _sha: {},
+};
+const PR = {
+  jose:    { color:'#7c6af7', letter:'J', name:'Jose' },
+  lola:    { color:'#f76a8a', letter:'L', name:'Lola' },
+  mariajo: { color:'#6af7c8', letter:'M', name:'Mariajo', dark:true },
+};
+const FIELDS = ['titulo','situacion','editorial','autor','guion','dibujo','tomos_tengo','tomos_esp','tomos_jap','sinopsis','comentarios'];
+
+// ══════════════════════════════════════════════════════
+// CONFIG (localStorage — solo metadatos pequeños)
+// ══════════════════════════════════════════════════════
+const cfg = {
+  get: k  => { try { return JSON.parse(localStorage.getItem('cv_'+k)); } catch { return null; } },
+  set: (k,v) => localStorage.setItem('cv_'+k, JSON.stringify(v)),
+  del: k  => localStorage.removeItem('cv_'+k),
+};
+
+// ══════════════════════════════════════════════════════
+// INDEXEDDB (almacenamiento local — sin límite)
+// ══════════════════════════════════════════════════════
+const IDB = {
+  _db: null,
+  open() {
+    if (this._db) return Promise.resolve(this._db);
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('cv3', 1);
+      r.onupgradeneeded = e => e.target.result.createObjectStore('d', { keyPath: 'k' });
+      r.onsuccess = e => { this._db = e.target.result; res(this._db); };
+      r.onerror   = e => rej(e.target.error);
+    });
+  },
+  async get(k) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const r = db.transaction('d','readonly').objectStore('d').get(k);
+      r.onsuccess = e => res(e.target.result ? e.target.result.v : null);
+      r.onerror   = e => rej(e.target.error);
+    });
+  },
+  async set(k, v) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const r = db.transaction('d','readwrite').objectStore('d').put({ k, v });
+      r.onsuccess = () => res();
+      r.onerror   = e => rej(e.target.error);
+    });
+  },
+};
+
+// ══════════════════════════════════════════════════════
+// GITHUB API
+// ══════════════════════════════════════════════════════
+function ghH() {
+  return {
+    'Authorization': 'token ' + cfg.get('gh_token'),
+    'Accept': 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+}
+function ghURL(uid) {
+  const owner = cfg.get('gh_owner');
+  const repo  = cfg.get('gh_repo') || 'collectavault-data';
+  return 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + uid + '.json';
+}
+async function ghLoad(uid) {
+  try {
+    const r = await fetch(ghURL(uid), { headers: ghH() });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const meta = await r.json();
+    A._sha[uid] = meta.sha;
+    const raw = atob(meta.content.replace(/\n/g, ''));
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const text = new TextDecoder('utf-8').decode(bytes);
+    const data = JSON.parse(text);
+    return data.books || null;
+  } catch (e) {
+    console.warn('ghLoad:', e.message);
+    return null;
+  }
+}
+async function ghSave(uid, books) {
+  setSS('saving');
+  try {
+    const text = JSON.stringify({ version:1, user:uid, saved:new Date().toISOString(), count:books.length, books }, null, 2);
+    const encoded = btoa(unescape(encodeURIComponent(text)));
+    const body = { message: 'CollectaVault ' + new Date().toLocaleString('es-ES'), content: encoded };
+    if (A._sha[uid]) body.sha = A._sha[uid];
+    const r = await fetch(ghURL(uid), { method:'PUT', headers:ghH(), body: JSON.stringify(body) });
+    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message || 'HTTP ' + r.status); }
+    const res = await r.json();
+    A._sha[uid] = res.content && res.content.sha;
+    A.lastSaved = new Date().toISOString();
+    cfg.set('ls_'+uid, A.lastSaved);
+    setSS('ok');
+    return true;
+  } catch(e) {
+    console.error('ghSave:', e.message);
+    setSS('err');
+    toast('❌ Error guardando en GitHub: ' + e.message, 'err');
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SYNC STATUS
+// ══════════════════════════════════════════════════════
+function setSS(s) {
+  const dot = document.getElementById('sdot');
+  const lbl = document.getElementById('slbl');
+  if (!dot) return;
+  dot.className = 'dot dot-' + s;
+  lbl.textContent = { local:'local', saving:'guardando...', ok:'guardado ✓', err:'error' }[s] || s;
+}
+
+// ══════════════════════════════════════════════════════
+// PERSISTIR (local + GitHub)
+// ══════════════════════════════════════════════════════
+async function persist() {
+  await IDB.set('books_' + A.uid, A.books);
+  if (A.gh) ghSave(A.uid, A.books);
+}
+
+// ══════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════
+function showSP(n) {
+  [1,2,3].forEach(i => document.getElementById('sp'+i).style.display = i===n ? '' : 'none');
+}
+function setupLocal() {
+  cfg.set('mode', 'local'); cfg.set('setup', 1);
+  document.getElementById('setup').style.display = 'none';
+  initAuth();
+}
+async function connectGH() {
+  const owner = document.getElementById('gh-owner').value.trim();
+  const repo  = document.getElementById('gh-repo').value.trim() || 'collectavault-data';
+  const token = document.getElementById('gh-token').value.trim();
+  const err   = document.getElementById('sp2-err');
+  const btn   = document.getElementById('gh-btn');
+  err.classList.remove('show');
+  if (!owner || !token) { err.textContent = 'Rellena usuario y token'; err.classList.add('show'); return; }
+  btn.textContent = 'Conectando...'; btn.disabled = true;
+  try {
+    const r = await fetch('https://api.github.com/repos/' + owner + '/' + repo, {
+      headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
+    });
+    if (r.status === 401) throw new Error('Token incorrecto');
+    if (r.status === 404) throw new Error('Repositorio no encontrado. Comprueba el nombre.');
+    if (!r.ok) throw new Error('Error ' + r.status);
+    cfg.set('gh_owner', owner); cfg.set('gh_repo', repo); cfg.set('gh_token', token);
+    cfg.set('mode', 'github'); cfg.set('setup', 1);
+    showSP(3);
+  } catch(e) {
+    err.textContent = '❌ ' + e.message; err.classList.add('show');
+  } finally {
+    btn.textContent = '🔗 Conectar →'; btn.disabled = false;
+  }
+}
+function finishSetup() {
+  document.getElementById('setup').style.display = 'none';
+  initAuth();
+}
+
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
+let authMode = 'in';
+function setTab(t) {
+  authMode = t;
+  document.getElementById('tab-in').classList.toggle('on', t==='in');
+  document.getElementById('tab-up').classList.toggle('on', t==='up');
+  document.getElementById('auth-name-g').style.display = t==='up' ? '' : 'none';
+}
+function initAuth() {
+  const mode = cfg.get('mode') || 'local';
+  A.gh = mode === 'github' && !!cfg.get('gh_token');
+  const el = document.getElementById('auth-storage');
+  if (A.gh) {
+    el.className = 'storage-ok';
+    el.textContent = '🐙 GitHub: ' + (cfg.get('gh_owner')||'') + '/collectavault-data';
+  } else {
+    el.className = 'storage-warn';
+    el.textContent = '⚠️ Modo local — datos solo en este dispositivo';
+  }
+  document.getElementById('auth').style.display = 'flex';
+}
+async function qlogin(uid) {
+  const p = PR[uid];
+  A.uid = uid; A.profile = uid; A.name = p.name;
+  await loadBooks();
+  startApp();
+}
+async function doAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-pass').value;
+  const errEl = document.getElementById('auth-err');
+  if (!email || !pass) { errEl.textContent='Rellena email y contraseña'; errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  const uid  = 'u_' + btoa(encodeURIComponent(email)).replace(/[^a-z0-9]/gi,'').slice(0,14);
+  const name = authMode==='up' ? (document.getElementById('auth-name').value.trim()||email.split('@')[0]) : (cfg.get('name_'+uid)||email.split('@')[0]);
+  if (authMode==='up') { cfg.set('name_'+uid, name); }
+  A.uid = uid; A.profile = null; A.name = name;
+  await loadBooks();
+  startApp();
+}
+
+// ══════════════════════════════════════════════════════
+// CARGAR LIBROS
+// ══════════════════════════════════════════════════════
+async function loadBooks() {
+  A.books = [];
+  // 1. Try GitHub
+  if (A.gh) {
+    const b = await ghLoad(A.uid);
+    if (b !== null) { A.books = b; setSS('ok'); return; }
+  }
+  // 2. Try local IndexedDB
+  const local = await IDB.get('books_' + A.uid);
+  if (local && local.length > 0) { A.books = local; setSS(A.gh ? 'err' : 'local'); return; }
+  // 3. Seed Jose if empty
+  if (A.uid === 'jose') {
+    const now = Date.now();
+    A.books = JOSE_DATA.map((c, i) => ({
+      ...c,
+      _id:  'jose_' + c.id,
+      _c:   now - (JOSE_DATA.length - i) * 1000,
+      _u:   now - (JOSE_DATA.length - i) * 1000,
+    }));
+    await persist();
+    setTimeout(() => toast('✅ ' + A.books.length + ' títulos cargados del Excel', 'ok'), 600);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INICIAR APP
+// ══════════════════════════════════════════════════════
+function startApp() {
+  document.getElementById('auth').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+
+  const p = PR[A.profile] || { color:'#7c6af7', letter:(A.name||'?')[0].toUpperCase(), name:A.name };
+  const av = document.getElementById('hav');
+  av.textContent = p.letter;
+  av.style.background = p.color;
+  if (p.dark) av.style.color = '#000';
+  document.getElementById('huname').textContent = p.name || A.name;
+
+  const h = new Date().getHours();
+  document.getElementById('d-greet').textContent = (h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches') + ' ' + (p.name||A.name) + ' 👋';
+  document.getElementById('d-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  updateCounts(); renderDash(); go('dash');
+}
+
+// ══════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════════
+function go(pg) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.ni[data-pg]').forEach(n => n.classList.remove('on'));
+  const el = document.getElementById('pg-' + pg);
+  if (el) el.classList.add('on');
+  const nav = document.querySelector('.ni[data-pg="' + pg + '"]');
+  if (nav) nav.classList.add('on');
+  document.getElementById('sb').classList.remove('open');
+  if (pg === 'col')     renderCol();
+  if (pg === 'dash')    renderDash();
+  if (pg === 'profile') renderProfile();
+}
+function toggleSB() { document.getElementById('sb').classList.toggle('open'); }
+function qf(f) { A.filter = f; A.page = 1; go('col'); }
+
+// ══════════════════════════════════════════════════════
+// CONTADORES
+// ══════════════════════════════════════════════════════
+function updateCounts() {
+  const b = A.books;
+  document.getElementById('nc-tot').textContent = b.length;
+  document.getElementById('nc-com').textContent = b.filter(x=>x.situacion==='COMPLETADA').length;
+  document.getElementById('nc-inc').textContent = b.filter(x=>x.situacion==='INCOMPLETA').length;
+  document.getElementById('nc-emi').textContent = b.filter(x=>x.situacion==='EN EMISIÓN').length;
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderDash() {
+  const b = A.books;
+  const comp = b.filter(x=>x.situacion==='COMPLETADA').length;
+  const inc  = b.filter(x=>x.situacion==='INCOMPLETA').length;
+  const emi  = b.filter(x=>x.situacion==='EN EMISIÓN').length;
+  const rated = b.filter(x=>x.valoracion>0);
+  const avg = rated.length ? (rated.reduce((s,x)=>s+x.valoracion,0)/rated.length).toFixed(1)+'★' : '—';
+
+  document.getElementById('d-stats').innerHTML =
+    sc(b.length,'Total','📚','var(--ac)') + sc(comp,'Completas','✅','var(--gr)') +
+    sc(inc,'Incompletas','📂','var(--go)') + sc(emi,'En emisión','📡','var(--cy)') +
+    sc(avg,'Valoración','⭐','var(--pk)');
+
+  const ts = A.lastSaved || cfg.get('ls_'+A.uid);
+  const when = ts ? new Date(ts).toLocaleString('es-ES') : '—';
+  const si = document.getElementById('d-storage');
+  if (A.gh) {
+    si.className = 'si-ok';
+    si.textContent = '🐙 GitHub activo — ' + (cfg.get('gh_owner')||'') + '/collectavault-data — guardado: ' + when;
+  } else {
+    si.className = 'si-warn';
+    si.textContent = '⚠️ Modo local. Ve a Ajustes para conectar GitHub y no perder datos.';
+  }
+
+  const recent = [...b].sort((a,z)=>(z._u||0)-(a._u||0)).slice(0,10);
+  document.getElementById('d-recent').innerHTML = recent.map(bCard).join('') || '<div class="empty"><div class="empty-ico">📚</div><div class="empty-t">Sin libros aún</div></div>';
+}
+function sc(n,l,i,c) {
+  return '<div class="stat" style="--c:' + c + '"><div class="stat-n">' + n + '</div><div class="stat-l">' + l + '</div><div class="stat-i">' + i + '</div></div>';
+}
+
+// ══════════════════════════════════════════════════════
+// COLECCIÓN
+// ══════════════════════════════════════════════════════
+function getFiltered() {
+  const q = (document.getElementById('gsearch').value||'').toLowerCase();
+  let b = A.books;
+  if (A.filter !== 'ALL') b = b.filter(x => x.situacion === A.filter);
+  if (q) b = b.filter(x =>
+    (x.titulo||'').toLowerCase().includes(q) ||
+    (x.autor||'').toLowerCase().includes(q) ||
+    (x.guion||'').toLowerCase().includes(q) ||
+    (x.editorial||'').toLowerCase().includes(q)
+  );
+  return [...b].sort((a,z) => {
+    if (A.sort==='az') return (a.titulo||'').localeCompare(z.titulo||'','es');
+    if (A.sort==='za') return (z.titulo||'').localeCompare(a.titulo||'','es');
+    if (A.sort==='editorial') return (a.editorial||'').localeCompare(z.editorial||'','es');
+    if (A.sort==='rating') return (z.valoracion||0)-(a.valoracion||0);
+    if (A.sort==='recent') return (z._u||0)-(a._u||0);
+    return 0;
+  });
+}
+function renderCol() {
+  const filtered = getFiltered();
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total/A.pageSize));
+  if (A.page > pages) A.page = pages;
+  const slice = filtered.slice((A.page-1)*A.pageSize, A.page*A.pageSize);
+  document.getElementById('c-sub').textContent = total + (total===1?' título':' títulos');
+
+  // Update chips
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.f === A.filter));
+
+  const ctn = document.getElementById('c-container');
+  if (!slice.length) {
+    ctn.innerHTML = '<div class="empty"><div class="empty-ico">🔍</div><div class="empty-t">Sin resultados</div></div>';
+  } else if (A.view === 'g') {
+    ctn.innerHTML = '<div class="bgrid">' + slice.map(bCard).join('') + '</div>';
+  } else {
+    ctn.innerHTML = '<div class="blist">' + slice.map(bRow).join('') + '</div>';
+  }
+  renderPgn(pages);
+}
+function renderPgn(pages) {
+  if (pages<=1) { document.getElementById('c-pgn').innerHTML=''; return; }
+  let h = '<button class="pgbtn" onclick="pg(' + (A.page-1) + ')" ' + (A.page===1?'disabled':'') + '>‹</button>';
+  const s = Math.max(1,A.page-2), e = Math.min(pages,A.page+2);
+  if (s>1) h += '<button class="pgbtn" onclick="pg(1)">1</button>';
+  if (s>2) h += '<span style="color:var(--mu);padding:0 4px">…</span>';
+  for(let i=s;i<=e;i++) h += '<button class="pgbtn ' + (i===A.page?'on':'') + '" onclick="pg(' + i + ')">' + i + '</button>';
+  if (e<pages-1) h += '<span style="color:var(--mu);padding:0 4px">…</span>';
+  if (e<pages) h += '<button class="pgbtn" onclick="pg(' + pages + ')">' + pages + '</button>';
+  h += '<button class="pgbtn" onclick="pg(' + (A.page+1) + ')" ' + (A.page===pages?'disabled':'') + '>›</button>';
+  document.getElementById('c-pgn').innerHTML = h;
+}
+function pg(n) { A.page=n; renderCol(); window.scrollTo(0,200); }
+function setView(v) { A.view=v; document.getElementById('vg').classList.toggle('on',v==='g'); document.getElementById('vl').classList.toggle('on',v==='l'); renderCol(); }
+function setF(f) { A.filter=f; A.page=1; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.f===f)); renderCol(); }
+function setSort(v) { A.sort=v; renderCol(); }
+function onSearch() { A.page=1; renderCol(); }
+
+// ══════════════════════════════════════════════════════
+// BOOK CARD / ROW HTML
+// ══════════════════════════════════════════════════════
+function bCard(b) {
+  const id = b._id || String(b.id);
+  const cover = b.imagenes && b.imagenes[0]
+    ? '<img src="' + b.imagenes[0] + '" loading="lazy">'
+    : '<div class="bcover-ph"><span>📚</span></div>';
+  const sc = 's-' + (b.situacion||'SIN-DATOS').replace(/ /g,'-');
+  const stars = b.valoracion > 0
+    ? '<div class="stars">' + [1,2,3,4,5].map(i=>'<span class="star' + (i<=b.valoracion?' lit':'') + '">★</span>').join('') + '</div>'
+    : '';
+  return '<div class="bcard" data-id="' + id + '" style="cursor:pointer">'
+    + '<div class="bcover">' + cover + '<span class="bst ' + sc + '">' + (b.situacion||'SIN DATOS') + '</span></div>'
+    + '<div class="binfo"><div class="btitle">' + esc(b.titulo) + '</div>'
+    + '<div class="bmeta">' + esc(b.editorial||b.guion||'') + '</div>' + stars
+    + '</div></div>';
+}
+function bRow(b) {
+  const id = b._id || String(b.id);
+  const cover = b.imagenes && b.imagenes[0] ? '<img src="' + b.imagenes[0] + '">' : '📚';
+  const sc = 's-' + (b.situacion||'SIN-DATOS').replace(/ /g,'-');
+  const stars = b.valoracion>0 ? [1,2,3,4,5].map(i=>'<span style="color:' + (i<=b.valoracion?'var(--go)':'var(--bd)') + '">★</span>').join('') : '';
+  return '<div class="brow" data-id="' + id + '" style="cursor:pointer">'
+    + '<div class="brow-cov">' + (b.imagenes&&b.imagenes[0]?'<img src="'+b.imagenes[0]+'">':'📚') + '</div>'
+    + '<div class="brow-info"><div class="brow-title">' + esc(b.titulo) + '</div>'
+    + '<div class="brow-sub">' + esc(b.guion||b.autor||'') + (b.editorial?' · '+esc(b.editorial):'') + '</div></div>'
+    + '<div class="brow-right"><div style="font-size:9px" class="' + sc + '">' + (b.situacion||'') + '</div>'
+    + '<div style="font-size:11px">' + stars + '</div>'
+    + '<div style="font-size:10px;color:var(--mu)">' + (b.tomos_tengo||'') + '</div></div></div>';
+}
+
+// ══════════════════════════════════════════════════════
+// MODAL DETALLE — abre al hacer clic
+// ══════════════════════════════════════════════════════
+let curImgIdx = 0;
+let curBookId = null;
+
+function openBook(id) {
+  const b = findBook(id);
+  if (!b) { console.warn('Book not found:', id); return; }
+  curBookId = id;
+  curImgIdx = 0;
+  renderBook(b);
+  document.getElementById('modal-bg').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function findBook(id) {
+  return A.books.find(b => (b._id || String(b.id)) === String(id));
+}
+
+function renderBook(b) {
+  const imgs   = b.imagenes || [];
+  const imgSrc = imgs[curImgIdx] ? '<img src="' + imgs[curImgIdx] + '">' : '📚';
+  const thumbs = imgs.length > 1
+    ? '<div class="mthumbs">' + imgs.map((im,i) =>
+        '<div class="mthumb' + (i===curImgIdx?' on':'') + '" onclick="switchImg(' + i + ')"><img src="' + im + '"></div>'
+      ).join('') + '</div>'
+    : '';
+  const sc = 's-' + (b.situacion||'SIN-DATOS').replace(/ /g,'-');
+  const auth = [b.autor,b.guion,b.dibujo].filter(Boolean).join(' · ');
+  const mstars = [1,2,3,4,5].map(i =>
+    '<span class="mstar' + (i<=(b.valoracion||0)?' lit':'') + '" onclick="rateBook(' + i + ')">' + (i<=(b.valoracion||0)?'★':'☆') + '</span>'
+  ).join('');
+  const infoGrid = [
+    b.editorial   ? ['Editorial',       b.editorial]   : null,
+    b.tomos_tengo ? ['Tomos que tengo', b.tomos_tengo] : null,
+    b.tomos_esp   ? ['Tomos España',    b.tomos_esp]   : null,
+    b.tomos_jap   ? ['Tomos Japón',     b.tomos_jap]   : null,
+  ].filter(Boolean).map(([l,v]) =>
+    '<div><div class="mil">' + l + '</div><div class="miv">' + esc(v) + '</div></div>'
+  ).join('');
+
+  document.getElementById('modal-body').innerHTML =
+    '<div class="mgrid">'
+    + '<div class="mcov">'
+    + '<div class="mcov-img">' + imgSrc + '</div>'
+    + thumbs
+    + '<button class="add-img" onclick="addImgModal()">📷 Añadir foto</button>'
+    + '</div>'
+    + '<div>'
+    + '<div class="mtitle">' + esc(b.titulo) + '</div>'
+    + '<div class="mauthor">' + esc(auth||'Autor desconocido') + '</div>'
+    + '<div class="mrow"><span class="badge ' + sc + '">' + (b.situacion||'SIN DATOS') + '</span>'
+    + '<div class="mstars">' + mstars + '</div></div>'
+    + (infoGrid ? '<div class="minfo">' + infoGrid + '</div>' : '')
+    + (b.sinopsis ? '<div class="msinop">' + esc(b.sinopsis) + '</div>' : '')
+    + '<div class="mcmt"><div class="mcmt-lbl">📝 Tus comentarios</div>'
+    + '<textarea class="mcmt-ta" id="m-cmt" placeholder="Tu opinión, notas...">' + esc(b.comentarios||'') + '</textarea></div>'
+    + '<div class="mactions">'
+    + '<button class="btn btn-p btn-sm" onclick="saveCmt()">💾 Guardar</button>'
+    + '<button class="btn btn-g btn-sm" onclick="editModal()">✏️ Editar</button>'
+    + '<button class="btn btn-d btn-sm" onclick="deleteModal()">🗑️ Eliminar</button>'
+    + '</div></div></div>';
+}
+
+function switchImg(i) { curImgIdx=i; renderBook(findBook(curBookId)); }
+function closeModal() {
+  document.getElementById('modal-bg').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function rateBook(r) {
+  const b = findBook(curBookId); if(!b) return;
+  b.valoracion = r; b._u = Date.now();
+  await persist(); updateCounts();
+  renderBook(b);
+  toast('⭐ Valoración guardada','ok');
+}
+async function saveCmt() {
+  const b = findBook(curBookId); if(!b) return;
+  b.comentarios = document.getElementById('m-cmt').value;
+  b._u = Date.now();
+  await persist();
+  toast('✅ Comentario guardado','ok');
+}
+function editModal() {
+  const b = findBook(curBookId); if(!b) return;
+  closeModal();
+  openEdit(b);
+}
+async function deleteModal() {
+  if(!confirm('¿Eliminar este título?')) return;
+  A.books = A.books.filter(b => (b._id||String(b.id)) !== String(curBookId));
+  closeModal();
+  await persist(); updateCounts(); renderCol();
+  toast('🗑️ Eliminado','');
+}
+function addImgModal() {
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+  inp.onchange = async e => {
+    const f = e.target.files[0]; if(!f) return;
+    const b64 = await toB64(f);
+    const b = findBook(curBookId); if(!b) return;
+    if(!b.imagenes) b.imagenes=[];
+    b.imagenes.push(b64); b._u = Date.now();
+    await persist(); renderBook(b);
+    toast('📸 Foto añadida','ok');
+  };
+  inp.click();
+}
+
+// ══════════════════════════════════════════════════════
+// FORMULARIO AÑADIR / EDITAR
+// ══════════════════════════════════════════════════════
+function newBook() {
+  A.editId = null; A.rating = 0; A.imgs = [];
+  FIELDS.forEach(f => { const el=document.getElementById('f-'+f); if(el) el.value=''; });
+  document.getElementById('f-situacion').value = 'COMPLETADA';
+  renderFStars(); updateImgPrevs();
+  document.getElementById('add-h').textContent = '➕ Añadir nueva entrada';
+  document.getElementById('f-del').style.display = 'none';
+  document.getElementById('f-save').textContent = '💾 Guardar';
+  go('add');
+}
+function openEdit(b) {
+  A.editId = b._id || String(b.id);
+  A.rating = b.valoracion || 0;
+  A.imgs   = [...(b.imagenes||[])];
+  FIELDS.forEach(f => { const el=document.getElementById('f-'+f); if(el) el.value = b[f]||''; });
+  renderFStars(); updateImgPrevs();
+  document.getElementById('add-h').textContent = '✏️ Editar entrada';
+  document.getElementById('f-del').style.display = '';
+  document.getElementById('f-save').textContent = '💾 Guardar cambios';
+  go('add');
+}
+async function saveBook() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) { toast('⚠️ El título es obligatorio','err'); return; }
+  const data = { valoracion: A.rating, imagenes: A.imgs, _u: Date.now() };
+  FIELDS.forEach(f => { data[f] = (document.getElementById('f-'+f)?.value||'').trim(); });
+
+  if (A.editId) {
+    const idx = A.books.findIndex(b=>(b._id||String(b.id))===String(A.editId));
+    if (idx >= 0) A.books[idx] = { ...A.books[idx], ...data };
+    toast('✅ Actualizado','ok');
+  } else {
+    data._id = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    data._c  = Date.now();
+    A.books.unshift(data);
+    toast('✅ Añadido','ok');
+  }
+  A.editId = null;
+  await persist(); updateCounts(); go('col');
+}
+async function deleteBook() {
+  if(!confirm('¿Eliminar este título?')) return;
+  A.books = A.books.filter(b=>(b._id||String(b.id))!==String(A.editId));
+  A.editId = null;
+  await persist(); updateCounts(); go('col');
+  toast('🗑️ Eliminado','');
+}
+function renderFStars() {
+  document.getElementById('f-stars').innerHTML = [1,2,3,4,5].map(i =>
+    '<span class="mstar' + (i<=A.rating?' lit':'') + '" style="font-size:26px" onclick="setRating(' + i + ')">' + (i<=A.rating?'★':'☆') + '</span>'
+  ).join('');
+}
+function setRating(r) { A.rating=r; renderFStars(); }
+
+// Upload de imágenes
+function trigUpload() { document.getElementById('f-imgs').click(); }
+function onImgs(e) { handleFiles([...e.target.files]); }
+async function handleFiles(files) {
+  for(const f of files) { if(f.type.startsWith('image/')) A.imgs.push(await toB64(f)); }
+  updateImgPrevs();
+}
+function updateImgPrevs() {
+  document.getElementById('f-prevs').innerHTML = A.imgs.map((img,i) =>
+    '<div class="img-pv"><img src="' + img + '"><button class="img-del" onclick="rmImg(' + i + ')">✕</button></div>'
+  ).join('');
+}
+function rmImg(i) { A.imgs.splice(i,1); updateImgPrevs(); }
+function toB64(f) {
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
+}
+
+// ══════════════════════════════════════════════════════
+// PERFIL / AJUSTES
+// ══════════════════════════════════════════════════════
+function renderProfile() {
+  const p = PR[A.profile] || { color:'#7c6af7', letter:(A.name||'?')[0].toUpperCase(), name:A.name };
+  document.getElementById('p-user').innerHTML =
+    '<div class="av" style="width:46px;height:46px;font-size:17px;background:' + p.color + ';' + (p.dark?'color:#000':'') + '">' + p.letter + '</div>'
+    + '<div><div style="font-family:var(--fh);font-size:14px;font-weight:700">' + esc(p.name||A.name) + '</div>'
+    + '<div style="font-size:11px;color:var(--mu)">' + A.uid + '</div></div>';
+
+  const ts = A.lastSaved || cfg.get('ls_'+A.uid);
+  const when = ts ? new Date(ts).toLocaleString('es-ES') : '—';
+  const ps = document.getElementById('p-storage');
+  if (A.gh) {
+    ps.className = 'si-ok';
+    ps.innerHTML = '🐙 <strong>GitHub activo</strong><br>'
+      + 'Repositorio: <em>' + cfg.get('gh_owner') + '/collectavault-data</em><br>'
+      + 'Archivo: <em>' + A.uid + '.json</em><br>'
+      + 'Último guardado: <strong>' + when + '</strong>';
+  } else {
+    ps.className = 'si-warn';
+    ps.innerHTML = '⚠️ <strong>Modo local</strong> — solo en este navegador.<br>'
+      + 'Configura GitHub abajo para sincronizar entre dispositivos.';
+  }
+  if (cfg.get('gh_owner')) document.getElementById('p-owner').value = cfg.get('gh_owner');
+  if (cfg.get('gh_repo'))  document.getElementById('p-repo').value  = cfg.get('gh_repo');
+
+  const b = A.books;
+  document.getElementById('p-stats').innerHTML =
+    sc(b.length,'Títulos','📚','var(--ac)') +
+    sc(b.filter(x=>x.valoracion>0).length,'Valorados','⭐','var(--go)') +
+    sc(b.filter(x=>x.comentarios).length,'Con notas','📝','var(--pk)') +
+    sc(b.filter(x=>x.imagenes&&x.imagenes.length).length,'Con fotos','📸','var(--cy)');
+}
+function toggleGHCfg() {
+  const box = document.getElementById('gh-cfg-box');
+  box.style.display = box.style.display === 'none' ? '' : 'none';
+}
+async function saveGHCfg() {
+  const owner = document.getElementById('p-owner').value.trim();
+  const repo  = document.getElementById('p-repo').value.trim() || 'collectavault-data';
+  const token = document.getElementById('p-token').value.trim();
+  if(!owner||!token){toast('Rellena usuario y token','err');return;}
+  try {
+    const r = await fetch('https://api.github.com/repos/'+owner+'/'+repo, {
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github+json'}
+    });
+    if(!r.ok) throw new Error('Error '+r.status);
+    cfg.set('gh_owner',owner); cfg.set('gh_repo',repo); cfg.set('gh_token',token);
+    cfg.set('mode','github');
+    A.gh = true;
+    toast('✅ GitHub conectado','ok');
+    await persist();
+    renderProfile();
+  } catch(e) { toast('❌ '+e.message,'err'); }
+}
+function exportBak() {
+  const data={user:A.name,date:new Date().toISOString(),count:A.books.length,books:A.books};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='collectavault_'+A.uid+'_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  toast('📥 Backup exportado','ok');
+}
+async function clearAll() {
+  if(!confirm('¿Borrar TODOS tus datos? Acción irreversible.')) return;
+  if(!confirm('¿Seguro? Perderás '+A.books.length+' títulos.')) return;
+  A.books=[];
+  await persist(); updateCounts(); renderDash();
+  toast('🗑️ Datos borrados','');
+}
+function logout() {
+  A.uid=null; A.books=[]; A.profile=null;
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('auth').style.display='flex';
+}
+
+// ══════════════════════════════════════════════════════
+// UTILIDADES
+// ══════════════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg,type) {
+  const e=document.createElement('div');
+  e.className='toast '+(type||'');
+  e.textContent=msg;
+  document.getElementById('toasts').appendChild(e);
+  setTimeout(()=>e.remove(),3000);
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (cfg.get('setup')) {
+    document.getElementById('setup').style.display = 'none';
+    initAuth();
+  }
+  document.getElementById('d-date').textContent =
+    new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Event delegation for book cards (avoids inline onclick issues)
+  document.addEventListener('click', e => {
+    const card = e.target.closest('[data-id]');
+    if (card && !e.target.closest('button') && !e.target.closest('.img-del')) {
+      openBook(card.dataset.id);
+    }
+  });
+});
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
